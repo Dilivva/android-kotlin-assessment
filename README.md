@@ -57,7 +57,7 @@ You are required to create a **Kotlin-based Android application** that meets the
 
 ---
 
-## Instructions
+##  🛠️  **Instructions**
 
 1. **Access the Repository:**
    - You have been granted access to this repository for the duration of the assessment.
@@ -65,11 +65,12 @@ You are required to create a **Kotlin-based Android application** that meets the
 2. **Clone the Repository:**
    ```bash
    git clone <repository-url>
-   cd frontend-react-assessment
+   cd kotlin-mobile-assessment
    ```
 
-3. **Switch to your work Branch:**
-  
+3. **Create Your Branch:**
+   - Create and switch to your working branch:
+   - Branch name: `firstname-lastname-assessment`
 
 4. **Implement the Features:**
    - Follow the requirements outlined above.
@@ -78,18 +79,18 @@ You are required to create a **Kotlin-based Android application** that meets the
      git commit -m "Added ... functionality to the ..."
      ```
 
-5. **Push Your Branch:**
+6. **Push To Your Branch:**
    ```bash
    git push origin firstname-lastname-assessment
    ```
 
-6. **Optional - Create a Pull Request (PR):**
-   - If instructed, open a pull request from your branch to the `submit` branch.
+7. **Optional - Create a Pull Request (PR):**
+   - Open a pull request from your branch to the `submit` branch.
    - Add a description summarizing your work, or stating extra information for the review committee 
 
 ---
 
-## Evaluation Criteria
+## 📊 **Evaluation Criteria**
 
 Your submission will be evaluated on the following:
 - **Code Quality:** Readability, organization, and adherence to best practices.
@@ -101,7 +102,7 @@ Your submission will be evaluated on the following:
 
 ---
 
-## Additional Notes
+## 📝 **Additional Notes**
 
 - You can use any external libraries that you find helpful, but be free to explain your choices.
 - Ensure your application runs without errors before submitting, its ok if it doesnt though 🤪🤪.
@@ -109,9 +110,9 @@ Your submission will be evaluated on the following:
 
 ---
 
-## Submission Deadline
+## ⏳ **Submission Deadline**
 
-All branches must be pushed 2Hhrs 30Min upon recieving the assessment email.
+All branches must be pushed 2Hhrs 30Min upon accepting the assessment email.
 
 ---
 
