@@ -22,38 +22,30 @@ The goal of this assessment is to:
 
 ## 📝 **Task Overview**  
 
-You are required to create a **Kotlin-based Android application** that meets the following requirements. The application should showcase your development expertise in a clean and structured manner.  
+You are required to create a **Delivery Weather Insights App** for Send24. The application will fetch weather data for given pickup and drop-off locations and provide recommendations for delivery feasibility. This task allows you to optionally use **Kotlin Multiplatform** for parts of the implementation.
 
 ---
 
 ## 🚀 **Requirements**  
 
-### 1. **User Interface**  
-- Design a clean, responsive UI using **Jetpack Compose** or **XML layouts**.  
-- Include a **home screen** displaying a list of data and a **details screen** for individual items.  
+### 1. **Core Features**  
+1. **Input Fields**: Allow users to input pickup and drop-off locations.  
+2. **Weather Data**: Fetch and display the following details for both locations:  
+   - Temperature.  
+   - Weather conditions (e.g., rain, clear skies).  
+   - Wind speed (optional).  
+3. **Delivery Recommendation**: Provide a recommendation based on weather conditions:  
+   - "Safe for delivery" (e.g., clear skies, light rain).  
+   - "Delay advised" (e.g., heavy rain, thunderstorms).  
+4. **History**: Save the last 5 routes searched locally (Room or SharedPreferences).  
 
-### 2. **Navigation**  
-- Implement seamless navigation between screens using the **Jetpack Navigation Component**.  
+### 2. **Optional Kotlin Multiplatform (KMP)**  
+- Use a **shared Kotlin Multiplatform module** to handle weather data processing and recommendations.  
+- Test the shared logic with unit tests.  
 
-### 3. **Data Fetching**  
-- Fetch and display data from a **public API** using **Retrofit** or any HTTP library of your choice.  
-- Handle **loading states**, **pagination**, and **API errors** gracefully.  
-
-### 4. **State Management**  
-- Use **ViewModel** and **StateFlow**/**LiveData** to manage app state.  
-
-### 5. **Search Functionality**  
-- Add a **search bar** to filter displayed data in real-time.  
-
-### 6. **Styling**  
-- Apply **Material Design 3** (Material You) principles for consistent styling.  
-- Ensure the app supports **light and dark themes**.  
-
-### 7. **Git Workflow**  
-- Use **Git** to track your progress:  
-  - Create your branch with the format: `firstname-lastname-assessment`.  
-  - Commit changes incrementally with meaningful messages (min 3, max 6).  
-  - Push your branch and create a pull request to the `submit` branch.  
+### 3. **User Interface**  
+- Use **Jetpack Compose** or **XML layouts** to design a clean, responsive UI.  
+- Display weather data and recommendations clearly.  
 
 ---
 
@@ -85,7 +77,7 @@ You are required to create a **Kotlin-based Android application** that meets the
    ```
 
 7. **Optional - Create a Pull Request (PR):**
-   - Open a pull request from your branch to the `submit` branch.
+   - Open a pull request from your branch to the `firstname-lastname-submit` branch.
    - Add a description summarizing your work, or stating extra information for the review committee 
 
 ---
