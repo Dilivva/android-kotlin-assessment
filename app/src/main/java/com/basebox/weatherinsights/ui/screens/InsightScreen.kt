@@ -27,11 +27,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.basebox.weatherinsights.ui.viewmodel.InsightViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InsightScreen(viewModel: InsightViewModel) {
+fun InsightScreen(viewModel: InsightViewModel, nav: NavController) {
 
     var pickupLocation = remember { mutableStateOf("") }
     var dropoffLocation = remember { mutableStateOf("") }
@@ -113,6 +115,7 @@ fun InsightScreen(viewModel: InsightViewModel) {
         // Display weather results if available
         weather?.let {
             Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                viewModel.saveData(locations.random(), it.main.temp, it.weather.first().description)
                 Text("Today's Weather Insight: ", fontWeight = FontWeight.Bold, fontSize = 24.sp, modifier = Modifier.align(Alignment.CenterHorizontally), style = MaterialTheme.typography.headlineSmall)
                 Text("${it.weather.first().description}", fontWeight = FontWeight.Bold, fontSize = 24.sp, modifier = Modifier.align(Alignment.CenterHorizontally), style = MaterialTheme.typography.headlineSmall)
                 Text("Temperature: ${it.main.temp}°C", fontWeight = FontWeight.Bold, fontSize = 20.sp, modifier = Modifier.align(Alignment.CenterHorizontally), style = MaterialTheme.typography.headlineMedium)
@@ -120,7 +123,7 @@ fun InsightScreen(viewModel: InsightViewModel) {
 
                 // Navigate to saved locations screen button
                 Button(
-                    onClick = { /* Navigate to SavedLocationsScreen */ },
+                    onClick = { nav.navigate("SavedLocationsScreen")},
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
                     Text("View Saved Locations", fontWeight = FontWeight.Bold)

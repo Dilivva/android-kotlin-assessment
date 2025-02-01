@@ -11,14 +11,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.basebox.weatherinsights.data.repo.InsightRepository
 import com.basebox.weatherinsights.ui.screens.InsightScreen
+import com.basebox.weatherinsights.ui.screens.SavedLocationsScreen
 import com.basebox.weatherinsights.ui.theme.WeatherInsightsTheme
 import com.basebox.weatherinsights.ui.viewmodel.InsightViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,8 +33,12 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     NavHost(navController, startDestination = "insightScreen", Modifier.padding(innerPadding)) {
                         composable("insightScreen") {
-                            val viewModel = InsightViewModel(InsightRepository())
-                            InsightScreen(viewModel = viewModel)
+                            val viewModel: InsightViewModel = hiltViewModel()
+                            InsightScreen(viewModel = viewModel, navController)
+                        }
+                        composable("savedLocationsScreen") {
+                            val viewModel: InsightViewModel = hiltViewModel()
+                            SavedLocationsScreen()
                         }
                     }
                 }

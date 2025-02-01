@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface WeatherDao {
@@ -12,5 +13,5 @@ interface WeatherDao {
     suspend fun insert(weather: WeatherData)
 
     @Query("SELECT * FROM weather_history ORDER BY id DESC LIMIT 5")
-    fun getLast5Searches(): LiveData<List<WeatherData>>
+    fun getLast5Searches(): Flow<List<WeatherData>>
 }

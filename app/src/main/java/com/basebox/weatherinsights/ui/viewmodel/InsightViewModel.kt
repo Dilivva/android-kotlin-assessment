@@ -4,7 +4,9 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import com.basebox.weatherinsights.data.db.WeatherData
 import com.basebox.weatherinsights.data.model.InsightResponse
 import com.basebox.weatherinsights.data.repo.InsightRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,14 +27,20 @@ class InsightViewModel @Inject constructor(private val repository: InsightReposi
             try {
                 val response = repository.fetchData(location)
                 _weatherData.postValue(response)
-                launch {
-                    val result = repository.fetchData(dropoff)
-                    _weatherDropOffData.postValue(result)
-                }
+//
             } catch (e: Exception) {
                 Log.e("InsightViewModel", "Error fetching weather: ${e.message}")
                 _weatherData.value = null
             }
+        }
+    }
+
+    val savedData = repository.allWeatherData.asLiveData()
+
+    fun saveData(location: String, temp: Double, description: String) {
+        viewModelScope.launch {
+            repository.insertWeatherData(WeatherData(0, location, temp, description ))
+            Log.d("InsightViewModel", "Saved: ${WeatherData(0, location, temp, description )}")
         }
     }
 }
