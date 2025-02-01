@@ -20,7 +20,7 @@ import javax.inject.Singleton
 //Main Module for Application
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class AppModule {
+ class AppModule {
     //First Retrofit ,it will be singleton
     @Provides
     @Singleton
@@ -37,6 +37,8 @@ abstract class AppModule {
         return retrofit.create(WeatherReportDAO::class.java)
     }
 
-     @Binds
-     abstract fun bindWeatherRepository(weatherRepositoryImpl: WeatherRepositoryImpl): WeatherRepository
+     @Provides
+     fun providesWeatherRepository( apiService:WeatherReportDAO): WeatherRepository{
+         return WeatherRepositoryImpl(apiService)
+     }
 }
