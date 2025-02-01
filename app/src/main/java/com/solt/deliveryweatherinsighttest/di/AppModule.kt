@@ -4,6 +4,9 @@ import android.content.Context
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.solt.deliveryweatherinsighttest.data.remote.Utils
 import com.solt.deliveryweatherinsighttest.data.remote.dao.WeatherReportDAO
+import com.solt.deliveryweatherinsighttest.data.remote.repository.WeatherRepository
+import com.solt.deliveryweatherinsighttest.data.remote.repository.WeatherRepositoryImpl
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -33,4 +36,7 @@ abstract class AppModule {
     fun providesWeatherApiService (retrofit:Retrofit):WeatherReportDAO{
         return retrofit.create(WeatherReportDAO::class.java)
     }
+
+     @Binds
+     abstract fun bindWeatherRepository(weatherRepositoryImpl: WeatherRepositoryImpl): WeatherRepository
 }
