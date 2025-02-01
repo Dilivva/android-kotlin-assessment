@@ -1,4 +1,4 @@
-package com.solt.deliveryweatherinsighttest.data.remote.model
+package com.solt.deliveryweatherinsighttest.data.remote.model.weather
 
 
 import kotlinx.serialization.SerialName

@@ -1,6 +1,6 @@
 package com.solt.deliveryweatherinsighttest.data.remote.dao
 
-import com.solt.deliveryweatherinsighttest.data.remote.model.WeatherReportModel
+import com.solt.deliveryweatherinsighttest.data.remote.model.weather.WeatherReportModel
 import retrofit2.http.GET
 import retrofit2.http.Query
 
