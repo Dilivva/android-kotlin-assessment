@@ -52,6 +52,7 @@ fun SavedLocationsScreen(viewModel: InsightViewModel = hiltViewModel()) {
         ) {
 
                 items(insights.size) { id->
+                    Log.d(TAG, "Insights Data: $insights")
                     val weatherData = insights.getOrNull(id)
                     weatherData?.let {
                     Card(

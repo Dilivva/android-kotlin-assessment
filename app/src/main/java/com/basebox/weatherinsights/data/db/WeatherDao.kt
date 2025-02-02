@@ -12,6 +12,6 @@ interface WeatherDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(weather: WeatherData)
 
-    @Query("SELECT * FROM weather_history ORDER BY id DESC LIMIT 5")
+    @Query("SELECT * FROM weather_data ORDER BY id DESC LIMIT 5")
     fun getLast5Searches(): Flow<List<WeatherData>>
 }

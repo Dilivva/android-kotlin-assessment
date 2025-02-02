@@ -1,5 +1,6 @@
 package com.basebox.weatherinsights.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,7 +39,7 @@ fun InsightScreen(viewModel: InsightViewModel, nav: NavController) {
     var pickupLocation = remember { mutableStateOf("") }
     var dropoffLocation = remember { mutableStateOf("") }
     val weather = viewModel.weatherData.observeAsState().value
-//    var expanded = remember { mutableStateOf(false)
+    var currentLocation = ""
 
     var expandedPickup = remember { mutableStateOf(false) }
     var expandedDropoff = remember { mutableStateOf(false) }
@@ -66,6 +67,7 @@ fun InsightScreen(viewModel: InsightViewModel, nav: NavController) {
                     Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                 }
             )
+            currentLocation = pickupLocation.value
             ExposedDropdownMenu(expanded = expandedPickup.value, onDismissRequest = { expandedPickup.value = false }) {
                 locations.forEach { location ->
                     DropdownMenuItem(text = {
@@ -114,13 +116,14 @@ fun InsightScreen(viewModel: InsightViewModel, nav: NavController) {
 
         // Display weather results if available
         weather?.let {
+            Log.d("InsightScreen", "Weather Data: $it")
+            viewModel.saveData(locations.random(), it.main.temp, it.weather.first().description)
             Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                viewModel.saveData(locations.random(), it.main.temp, it.weather.first().description)
                 Text("Today's Weather Insight: ", fontWeight = FontWeight.Bold, fontSize = 24.sp, modifier = Modifier.align(Alignment.CenterHorizontally), style = MaterialTheme.typography.headlineSmall)
                 Text("${it.weather.first().description}", fontWeight = FontWeight.Bold, fontSize = 24.sp, modifier = Modifier.align(Alignment.CenterHorizontally), style = MaterialTheme.typography.headlineSmall)
                 Text("Temperature: ${it.main.temp}°C", fontWeight = FontWeight.Bold, fontSize = 20.sp, modifier = Modifier.align(Alignment.CenterHorizontally), style = MaterialTheme.typography.headlineMedium)
                 Spacer(modifier = Modifier.height(24.dp))
-
+//                viewModel.saveData(locations.random(), it.main.temp, it.weather.first().description)
                 // Navigate to saved locations screen button
                 Button(
                     onClick = { nav.navigate("SavedLocationsScreen")},
