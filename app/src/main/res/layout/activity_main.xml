@@ -19,9 +19,14 @@
         app:navGraph="@navigation/main_app_nav_graph" />
 
     <FrameLayout
+        android:id="@+id/infoBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:elevation="5dp"
+        android:visibility="gone"
+        android:background="@drawable/rounded_rect_bg"
+        android:paddingVertical="4dp"
+        android:layout_marginHorizontal="4dp"
         app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
