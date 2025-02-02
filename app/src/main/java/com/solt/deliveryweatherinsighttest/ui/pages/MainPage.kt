@@ -11,20 +11,26 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
 import com.solt.deliveryweatherinsighttest.MainActivity
+import com.solt.deliveryweatherinsighttest.data.remote.model.weather.WeatherReportModel
 import com.solt.deliveryweatherinsighttest.databinding.MainPageLayoutBinding
 import com.solt.deliveryweatherinsighttest.ui.maps.MapTiles
 import com.solt.deliveryweatherinsighttest.ui.viewmodel.LocationViewModel
+import com.solt.deliveryweatherinsighttest.ui.viewmodel.MainPageViewModel
 import com.solt.deliveryweatherinsighttest.utils.LocationService
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import org.maplibre.android.MapLibre
 import org.maplibre.android.camera.CameraPosition
+import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
 import javax.inject.Inject
@@ -39,13 +45,15 @@ lateinit var binding: MainPageLayoutBinding
              field = value
         if (field != null){
             getUserLocation(field!!)
+            setOnLongClick(field!!)
         }
     }
     //This will be activity launcher contract that we will get from the activity
 lateinit var permissionActivityContractLauncher:ActivityResultLauncher<Array<String>>
 //This will be the location service  used for getting the user location and other location related services
 
- val locationViewModel: LocationViewModel by activityViewModels<LocationViewModel>()
+    val locationViewModel: LocationViewModel by activityViewModels<LocationViewModel>()
+    val mainPageViewModel :MainPageViewModel by viewModels<MainPageViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //Initialize the map
@@ -92,7 +100,9 @@ lateinit var permissionActivityContractLauncher:ActivityResultLauncher<Array<Str
             map = it
             it.cameraPosition = CameraPosition.Builder().zoom(14.00).target(LatLng(1.0,2.0)).build()
         }
-        //We also need to set up the bottom sheet
+        //We also need to set up the bottom sheet to show when the user long clicks on the any point in the map and display a weather information
+        //That will be set up when the map is ready
+
 
 
 
@@ -101,6 +111,29 @@ lateinit var permissionActivityContractLauncher:ActivityResultLauncher<Array<Str
     }
     fun getUserLocation(map:MapLibreMap) {
         this.lifecycle.addObserver(MapLocationCallBack(map,this))
+    }
+    fun updateBottomSheet(weatherReport: WeatherReportModel){
+        binding.tempTv.text = "Temperature : ${(weatherReport.main?.temp?:0.0)} K"
+        binding.windSpeedTv.text = "Wind Speed ${weatherReport.wind?.speed?:0.0} m/s"
+    }
+    fun setOnLongClick(map:MapLibreMap){
+        map.addOnMapLongClickListener { latLng ->
+            //Animate the camera to that position
+            map.animateCamera(CameraUpdateFactory.newLatLng(latLng))
+            //Then we need to get the weather report for that place
+             viewLifecycleOwner.lifecycleScope.launch {
+
+                mainPageViewModel.getWeatherReport(latLng.longitude,latLng.latitude,{
+                    //We will update the data in bottom sheet
+                    Log.i("Weather",it.main?.temp.toString())
+                    updateBottomSheet(it)
+                }){
+                    Log.i("Weather","Error ${it.message}")
+                }
+            }
+
+            true
+        }
 
     }
      class MapLocationCallBack( val map: MapLibreMap, val mainPage:MainPage): LocationCallback(),LifecycleEventObserver {
@@ -111,12 +144,14 @@ lateinit var permissionActivityContractLauncher:ActivityResultLauncher<Array<Str
         }
 
         override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-            //Here we will check the lifecycle state of the fragment
+            //Here we will check the lifecycle state of the fragment gto stop location updates if it is on Pause
             when(event){
                 Lifecycle.Event.ON_RESUME->{
+
                    mainPage.locationViewModel.requestLocationUpdates(mainPage,this){(mainPage.requireActivity() as MainActivity).showFailureMessage(it)}
                 }
                 Lifecycle.Event.ON_PAUSE->{
+
                     mainPage.locationViewModel.removeLocationUpdates(mainPage,this)
                 }
                 else -> {}

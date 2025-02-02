@@ -6,6 +6,6 @@ import retrofit2.http.Query
 
 interface WeatherReportDAO {
     //The Weather Api Interface for Retrofit
-    @GET("/weather")
-  suspend  fun getWeatherReportByLongitudeAndLatitude(@Query("lon")longitude:Double,@Query("lat")latitude:Double,@Query("appid")apiKey:String):WeatherReportModel
+    @GET("weather")
+  suspend  fun getWeatherReportByLongitudeAndLatitude(@Query("lon")longitude:Double,@Query("lat")latitude:Double,@Query("appId")apiKey:String):WeatherReportModel
 }
