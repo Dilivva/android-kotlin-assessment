@@ -38,7 +38,6 @@ fun InsightScreen(viewModel: InsightViewModel, nav: NavController) {
     val pickupLocation = remember { mutableStateOf("") }
     val dropoffLocation = remember { mutableStateOf("") }
     val weather = viewModel.weatherData.observeAsState().value
-    var currentLocation = ""
 
     val expandedPickup = remember { mutableStateOf(false) }
     val expandedDropoff = remember { mutableStateOf(false) }
