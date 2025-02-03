@@ -29,20 +29,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.basebox.weatherinsights.ui.viewmodel.InsightViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InsightScreen(viewModel: InsightViewModel, nav: NavController) {
 
-    var pickupLocation = remember { mutableStateOf("") }
-    var dropoffLocation = remember { mutableStateOf("") }
+    val pickupLocation = remember { mutableStateOf("") }
+    val dropoffLocation = remember { mutableStateOf("") }
     val weather = viewModel.weatherData.observeAsState().value
     var currentLocation = ""
 
-    var expandedPickup = remember { mutableStateOf(false) }
-    var expandedDropoff = remember { mutableStateOf(false) }
+    val expandedPickup = remember { mutableStateOf(false) }
+    val expandedDropoff = remember { mutableStateOf(false) }
 
 
     // Dummy data for dropdown options
@@ -58,7 +57,7 @@ fun InsightScreen(viewModel: InsightViewModel, nav: NavController) {
         // Pickup location dropdown
         ExposedDropdownMenuBox(expanded = expandedPickup.value, onExpandedChange = { expandedPickup.value = it }) {
             OutlinedTextField(
-                value = "${pickupLocation.value}",
+                value = pickupLocation.value,
                 onValueChange = {  },
                 label = { Text("Pickup Location") },
                 modifier = Modifier.fillMaxWidth().menuAnchor(),
@@ -82,7 +81,7 @@ fun InsightScreen(viewModel: InsightViewModel, nav: NavController) {
         // Dropoff location dropdown
         ExposedDropdownMenuBox(expanded = expandedDropoff.value, onExpandedChange = { expandedDropoff.value = it }) {
             OutlinedTextField(
-                value = "${dropoffLocation.value}",
+                value = dropoffLocation.value,
                 onValueChange = { },
                 label = { Text("Dropoff Location") },
                 modifier = Modifier.fillMaxWidth()
@@ -120,7 +119,7 @@ fun InsightScreen(viewModel: InsightViewModel, nav: NavController) {
 //            viewModel.saveData(locations.random(), it.main.temp, it.weather.first().description)
             Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("Today's Weather Insight: ", fontWeight = FontWeight.Bold, fontSize = 24.sp, modifier = Modifier.align(Alignment.CenterHorizontally), style = MaterialTheme.typography.headlineSmall)
-                Text("${it.weather.first().description}", fontWeight = FontWeight.Bold, fontSize = 24.sp, modifier = Modifier.align(Alignment.CenterHorizontally), style = MaterialTheme.typography.headlineSmall)
+                Text(it.weather.first().description, fontWeight = FontWeight.Bold, fontSize = 24.sp, modifier = Modifier.align(Alignment.CenterHorizontally), style = MaterialTheme.typography.headlineSmall)
                 Text("Temperature: ${it.main.temp}°C", fontWeight = FontWeight.Bold, fontSize = 20.sp, modifier = Modifier.align(Alignment.CenterHorizontally), style = MaterialTheme.typography.headlineMedium)
                 Spacer(modifier = Modifier.height(24.dp))
                 viewModel.saveData(locations.random(), it.main.temp, it.weather.first().description)

@@ -1,8 +1,6 @@
 package com.basebox.weatherinsights.di
 
-import android.app.Application
 import android.content.Context
-import androidx.room.Room
 import com.basebox.weatherinsights.data.db.RoomDB
 import com.basebox.weatherinsights.data.db.WeatherDao
 import dagger.Module
