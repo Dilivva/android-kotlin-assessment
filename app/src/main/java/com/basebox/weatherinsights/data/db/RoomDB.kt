@@ -29,7 +29,8 @@ abstract class RoomDB : RoomDatabase() {
                     context.applicationContext,
                     RoomDB::class.java,
                     "weather_database"
-                ).addMigrations(MIGRATION_1_2).fallbackToDestructiveMigration()
+                )
+//                    .addMigrations(MIGRATION_1_2).fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 return instance

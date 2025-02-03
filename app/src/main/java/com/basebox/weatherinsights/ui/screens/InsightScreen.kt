@@ -29,6 +29,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.basebox.weatherinsights.data.db.WeatherData
+import com.basebox.weatherinsights.data.model.InsightResponse
 import com.basebox.weatherinsights.ui.viewmodel.InsightViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,10 +40,14 @@ fun InsightScreen(viewModel: InsightViewModel, nav: NavController) {
     val pickupLocation = remember { mutableStateOf("") }
     val dropoffLocation = remember { mutableStateOf("") }
     val weather = viewModel.weatherData.observeAsState().value
+    val dropoffWeather = viewModel.weatherDropOffData.observeAsState().value
 
     val expandedPickup = remember { mutableStateOf(false) }
     val expandedDropoff = remember { mutableStateOf(false) }
-
+    var currentLocation = ""
+    var dropoffLocationData = ""
+    var recommendation = ""
+    var weatherResponse: InsightResponse? = null
 
     // Dummy data for dropdown options
     val locations = listOf("New York", "Los Angeles", "Chicago", "Miami", "Lagos", "Abuja",
@@ -52,25 +58,33 @@ fun InsightScreen(viewModel: InsightViewModel, nav: NavController) {
         .padding(16.dp)
         .verticalScroll(rememberScrollState())) {
 
-//        var expandedPickup = remember { mutableStateOf(false) }
         // Pickup location dropdown
-        ExposedDropdownMenuBox(expanded = expandedPickup.value, onExpandedChange = { expandedPickup.value = it }) {
+        ExposedDropdownMenuBox(
+            expanded = expandedPickup.value,
+            onExpandedChange = { expandedPickup.value = it }) {
             OutlinedTextField(
                 value = pickupLocation.value,
-                onValueChange = {  },
+                onValueChange = { },
                 label = { Text("Pickup Location") },
-                modifier = Modifier.fillMaxWidth().menuAnchor(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(),
                 readOnly = true,
                 trailingIcon = {
                     Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                 }
             )
             currentLocation = pickupLocation.value
-            ExposedDropdownMenu(expanded = expandedPickup.value, onDismissRequest = { expandedPickup.value = false }) {
+            ExposedDropdownMenu(
+                expanded = expandedPickup.value,
+                onDismissRequest = { expandedPickup.value = false }) {
                 locations.forEach { location ->
                     DropdownMenuItem(text = {
-                        Text(location) }, onClick = { pickupLocation.value = location
-                        expandedPickup.value = false  })
+                        Text(location)
+                    }, onClick = {
+                        pickupLocation.value = location
+                        expandedPickup.value = false
+                    })
                 }
             }
         }
@@ -78,19 +92,25 @@ fun InsightScreen(viewModel: InsightViewModel, nav: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         // Dropoff location dropdown
-        ExposedDropdownMenuBox(expanded = expandedDropoff.value, onExpandedChange = { expandedDropoff.value = it }) {
+        ExposedDropdownMenuBox(
+            expanded = expandedDropoff.value,
+            onExpandedChange = { expandedDropoff.value = it }) {
             OutlinedTextField(
                 value = dropoffLocation.value,
                 onValueChange = { },
                 label = { Text("Dropoff Location") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .menuAnchor(),
                 readOnly = true,
                 trailingIcon = {
                     Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                 }
             )
-            ExposedDropdownMenu(expanded = expandedDropoff.value, onDismissRequest = { expandedDropoff.value = false }) {
+            dropoffLocationData = dropoffLocation.value
+            ExposedDropdownMenu(
+                expanded = expandedDropoff.value,
+                onDismissRequest = { expandedDropoff.value = false }) {
                 locations.forEach { location ->
                     DropdownMenuItem(text = { Text(location) }, onClick = {
                         dropoffLocation.value = location
@@ -103,48 +123,126 @@ fun InsightScreen(viewModel: InsightViewModel, nav: NavController) {
         Spacer(modifier = Modifier.height(24.dp))
 
         // Fetch weather button
+        if (!currentLocation.isNullOrEmpty() && !dropoffLocationData.isNullOrEmpty()) {
         Button(
             onClick = { viewModel.fetchData(pickupLocation.value, dropoffLocation.value) },
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
             Text("Get Weather Insight", fontWeight = FontWeight.Bold)
         }
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         // Display weather results if available
         weather?.let {
-            Log.d("InsightScreen", "Weather Data: $it")
-//            viewModel.saveData(locations.random(), it.main.temp, it.weather.first().description)
-            Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Today's Weather Insight: ", fontWeight = FontWeight.Bold, fontSize = 24.sp, modifier = Modifier.align(Alignment.CenterHorizontally), style = MaterialTheme.typography.headlineSmall)
-                Text(it.weather.first().description, fontWeight = FontWeight.Bold, fontSize = 24.sp, modifier = Modifier.align(Alignment.CenterHorizontally), style = MaterialTheme.typography.headlineSmall)
-                Text("Temperature: ${it.main.temp}°C", fontWeight = FontWeight.Bold, fontSize = 20.sp, modifier = Modifier.align(Alignment.CenterHorizontally), style = MaterialTheme.typography.headlineMedium)
-                Spacer(modifier = Modifier.height(24.dp))
-                viewModel.saveData(locations.random(), it.main.temp, it.weather.first().description)
-                // Navigate to saved locations screen button
-                Button(
-                    onClick = { nav.navigate("SavedLocationsScreen")},
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
+            dropoffWeather?.let {
+//            Log.d("InsightScreen", "Weather Data: $it")
+                weatherResponse = it
+
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("View Saved Locations", fontWeight = FontWeight.Bold)
+                    Text(
+                        "Today's Weather Insight: ",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 24.sp,
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                    Text(
+                        "Pick up Weather Info: ${weather.weather.first().description}",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                    Text(
+                        " Pick up Temperature: ${weather.main.temp} C",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(
+                        "Drop off Weather Info: ${dropoffWeather.weather.first().description}",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+
+                    Text(
+                        "Drop off Temperature: ${dropoffWeather.main.temp} C",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(
+                        "Recommendation",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 24.sp,
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+
+                    if (isFavorable(weather.weather.first().description) &&
+                        isFavorable(dropoffWeather.weather.first().description)
+                    ) {
+                        Text(
+                            "Proceed with Delivery",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            modifier = Modifier.align(Alignment.CenterHorizontally),
+                            style = MaterialTheme.typography.headlineMedium
+                        )
+                    } else {
+                        Text(
+                            "Advised to hold off until clear weather",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            modifier = Modifier.align(Alignment.CenterHorizontally),
+                            style = MaterialTheme.typography.headlineMedium
+                        )
+                    }
+
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Navigate to saved locations screen button
+                    if (!currentLocation.isNullOrEmpty()) {
+                        Button(
+                            onClick = {
+                                nav.navigate("SavedLocationsScreen").also {
+                                    viewModel.saveData(
+                                        currentLocation,
+                                        weatherResponse?.main!!.temp,
+                                        weatherResponse?.weather!!.first().description
+                                    )
+                                }
+                            },
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        ) {
+                            Text("View Saved Locations", fontWeight = FontWeight.Bold)
+                        }
+                    }
                 }
             }
         }
     }
 
-//    var location = remember { mutableStateOf("") }
-//    val weather = viewModel.weatherData.observeAsState().value
-//
-//    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-//        TextField(value = location.value, onValueChange = { location.value = it })
-//        Button(onClick = { viewModel.fetchData(location.value) }) {
-//            Text("Get Weather")
-//        }
-//
-//        weather?.let {
-//            Text("Temperature: ${it.main.temp}°C")
-//            Text("Condition: ${it.weather.first().description}")
-//        }
-//    }
+}
+fun isFavorable(condition: String): Boolean {
+    return when (condition) {
+        "clear sky", "few clouds", "scattered clouds" -> true
+        else -> false
+    }
 }
