@@ -117,7 +117,7 @@ fun InsightScreen(viewModel: InsightViewModel, nav: NavController) {
         // Display weather results if available
         weather?.let {
             Log.d("InsightScreen", "Weather Data: $it")
-            viewModel.saveData(locations.random(), it.main.temp, it.weather.first().description)
+//            viewModel.saveData(locations.random(), it.main.temp, it.weather.first().description)
             Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("Today's Weather Insight: ", fontWeight = FontWeight.Bold, fontSize = 24.sp, modifier = Modifier.align(Alignment.CenterHorizontally), style = MaterialTheme.typography.headlineSmall)
                 Text("${it.weather.first().description}", fontWeight = FontWeight.Bold, fontSize = 24.sp, modifier = Modifier.align(Alignment.CenterHorizontally), style = MaterialTheme.typography.headlineSmall)
