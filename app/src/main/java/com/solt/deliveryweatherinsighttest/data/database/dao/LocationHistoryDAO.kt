@@ -1,6 +1,9 @@
 package com.solt.deliveryweatherinsighttest.data.database.dao
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
 import androidx.room.Query
 import com.solt.deliveryweatherinsighttest.data.database.model.LocationHistoryEntity
 
@@ -15,5 +18,18 @@ interface LocationHistoryDAO {
     //It will be paged
     //Get the location history by time from top to bottom
     @Query("SELECT * FROM LocationHistoryEntity ORDER BY timeStamp DESC")
-    fun getLocationHistory():List<LocationHistoryEntity>
+    fun getLocationHistory(): PagingSource<Int,LocationHistoryEntity>
+
+    //Get the last five location History entries
+    @Query("SELECT * FROM LocationHistoryEntity ORDER BY timeStamp DESC LIMIT 5 ")
+   suspend fun getLastFiveLocationHistoryEntries():List<LocationHistoryEntity>
+
+    //Insertion
+    @Insert
+    suspend fun insertLocationHistory(locationHistory:LocationHistoryEntity)
+
+    //Deletion
+    @Delete
+    suspend fun deleteLocationHistory(locationHistory: LocationHistoryEntity)
+
 }

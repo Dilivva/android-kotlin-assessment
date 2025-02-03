@@ -2,7 +2,10 @@ package com.solt.deliveryweatherinsighttest.di
 
 import android.content.Context
 import android.util.Log
+import androidx.room.Room
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.solt.deliveryweatherinsighttest.data.database.dao.LocationHistoryDAO
+import com.solt.deliveryweatherinsighttest.data.database.database.LocationHistoryDatabase
 import com.solt.deliveryweatherinsighttest.data.remote.Utils
 import com.solt.deliveryweatherinsighttest.data.remote.dao.WeatherReportDAO
 import com.solt.deliveryweatherinsighttest.data.remote.repository.WeatherRepository
@@ -57,4 +60,15 @@ import javax.inject.Singleton
      fun providesWeatherRepository( apiService:WeatherReportDAO): WeatherRepository{
          return WeatherRepositoryImpl(apiService)
      }
+    //Room
+    @Provides
+    @Singleton
+    fun providesLocationHistoryDatabase(@ApplicationContext context: Context):LocationHistoryDatabase{
+    return    Room.databaseBuilder(context,LocationHistoryDatabase::class.java,"locationHistory.db").build()
+    }
+    @Provides
+    @Singleton
+        fun providesLocationHistoryDAO(database: LocationHistoryDatabase):LocationHistoryDAO{
+         return database.locationHistoryDAO()
+    }
 }
