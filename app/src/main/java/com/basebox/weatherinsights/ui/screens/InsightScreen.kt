@@ -123,7 +123,7 @@ fun InsightScreen(viewModel: InsightViewModel, nav: NavController) {
                 Text("${it.weather.first().description}", fontWeight = FontWeight.Bold, fontSize = 24.sp, modifier = Modifier.align(Alignment.CenterHorizontally), style = MaterialTheme.typography.headlineSmall)
                 Text("Temperature: ${it.main.temp}°C", fontWeight = FontWeight.Bold, fontSize = 20.sp, modifier = Modifier.align(Alignment.CenterHorizontally), style = MaterialTheme.typography.headlineMedium)
                 Spacer(modifier = Modifier.height(24.dp))
-//                viewModel.saveData(locations.random(), it.main.temp, it.weather.first().description)
+                viewModel.saveData(locations.random(), it.main.temp, it.weather.first().description)
                 // Navigate to saved locations screen button
                 Button(
                     onClick = { nav.navigate("SavedLocationsScreen")},

@@ -4,7 +4,7 @@
             "outputFile": "com.basebox.weatherinsights.test.app-mergeDebugAndroidTestResources-35:/values-bg/values-bg.xml",
             "map": [
                 {
-                    "source": "/Users/user/.gradle/caches/transforms-4/a81a9f9d698d3d9c812122f39f75cd45/transformed/ui-release/res/values-bg/values-bg.xml",
+                    "source": "/Users/user/.gradle/caches/transforms-4/80d5943946c2ffbb651efdc47191162c/transformed/ui-release/res/values-bg/values-bg.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -21,7 +21,7 @@
                     }
                 },
                 {
-                    "source": "/Users/user/.gradle/caches/transforms-4/116c1aa953984b28a4c452009daa776c/transformed/core-1.15.0/res/values-bg/values-bg.xml",
+                    "source": "/Users/user/.gradle/caches/transforms-4/f4c56c4867bc510b2e900c6e6fb813fe/transformed/core-1.15.0/res/values-bg/values-bg.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9",
                         "startColumns": "4,4,4,4,4,4,4,4",
