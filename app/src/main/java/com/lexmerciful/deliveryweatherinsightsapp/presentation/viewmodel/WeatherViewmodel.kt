@@ -8,10 +8,12 @@ import androidx.lifecycle.viewModelScope
 import com.lexmerciful.deliveryweatherinsightsapp.data.repository.WeatherRepository
 import com.lexmerciful.deliveryweatherinsightsapp.domain.model.WeatherResponse
 import com.lexmerciful.deliveryweatherinsightsapp.util.Resource
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
+@HiltViewModel
 class WeatherViewmodel @Inject constructor(
     private val weatherRepository: WeatherRepository
 ): ViewModel() {
@@ -22,11 +24,23 @@ class WeatherViewmodel @Inject constructor(
     private val _dropOffWeather = MutableLiveData<WeatherResponse?>()
     val dropOffWeather: MutableLiveData<WeatherResponse?> = _dropOffWeather
 
+    private val _weatherData = MutableLiveData<Pair<WeatherResponse, WeatherResponse>>()
+    val weatherData: LiveData<Pair<WeatherResponse, WeatherResponse>> = _weatherData
+
     private val _deliveryRecommendation = MutableLiveData<String?>()
     val deliveryRecommendation: MutableLiveData<String?> = _deliveryRecommendation
 
+    private val _loadingState = MutableLiveData<Boolean>()
+    val loadingState: LiveData<Boolean> = _loadingState
+
+    private val _errorState = MutableLiveData<String?>()
+    val errorState: LiveData<String?> = _errorState
+
     fun getWeather(pickUpLocation: String, dropOffLocation: String) {
         viewModelScope.launch {
+            _loadingState.value = true
+            _errorState.value = null
+
             try {
                 val pickupWeatherInfo = weatherRepository.fetchWeather(pickUpLocation)
                 _pickUpWeather.value = pickupWeatherInfo.data
@@ -34,13 +48,18 @@ class WeatherViewmodel @Inject constructor(
                 val dropOffWeatherInfo = weatherRepository.fetchWeather(dropOffLocation)
                 _dropOffWeather.value = dropOffWeatherInfo.data
 
+                _weatherData.value = Pair(pickupWeatherInfo.data!!, dropOffWeatherInfo.data!!)
+
                 if (pickupWeather.value != null && dropOffWeather.value != null) {
                     val recommendation = getRecommendation(pickupWeather.value!!, dropOffWeather.value!!)
                     _deliveryRecommendation.value = recommendation
                 }
 
             } catch (e: Exception) {
+                _errorState.value = e.message
                 Timber.tag("WeatherViewmodel").e("Error: %s", e.message)
+            } finally {
+                _loadingState.value = false
             }
         }
     }
