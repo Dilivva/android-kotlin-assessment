@@ -20,7 +20,7 @@ class LocationViewModel @Inject constructor(val locationService: LocationService
      val didUserChangeLocationSettings = Channel<Boolean>()
     fun requestLocationUpdates(fragment: Fragment,locationCallback: LocationCallback,onFailure: (String) -> Unit){
         //the location updates should not change unless the user moves
-        val locationUpdateRequest = LocationRequest.Builder(Priority.PRIORITY_BALANCED_POWER_ACCURACY,5000).setMinUpdateDistanceMeters(1.0f).build()
+        val locationUpdateRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY,5000).setMinUpdateDistanceMeters(1.0f).build()
         //Check if the settings are all set
         val locationSettingRequest = LocationSettingsRequest.Builder().addLocationRequest(locationUpdateRequest).build()
         locationService.checkIfLocationSettingsAreSet(fragment.requireActivity(),locationSettingRequest,{

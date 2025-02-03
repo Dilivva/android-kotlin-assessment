@@ -21,7 +21,10 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
 import com.solt.deliveryweatherinsighttest.MainActivity
 import com.solt.deliveryweatherinsighttest.data.remote.model.weather.WeatherReportModel
+import com.solt.deliveryweatherinsighttest.databinding.HomeMarkerViewLayoutBinding
 import com.solt.deliveryweatherinsighttest.databinding.MainPageLayoutBinding
+import com.solt.deliveryweatherinsighttest.ui.maps.CustomMarkerView
+
 import com.solt.deliveryweatherinsighttest.ui.maps.MapTiles
 import com.solt.deliveryweatherinsighttest.ui.viewmodel.LocationViewModel
 import com.solt.deliveryweatherinsighttest.ui.viewmodel.MainPageViewModel
@@ -33,27 +36,33 @@ import org.maplibre.android.camera.CameraPosition
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
+import org.maplibre.android.plugins.markerview.MarkerView
+import org.maplibre.android.plugins.markerview.MarkerViewManager
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainPage: Fragment() {
-lateinit var binding: MainPageLayoutBinding
+    lateinit var binding: MainPageLayoutBinding
 //This will be gotten when the map is ready
 //We will also get the user location
- var map:MapLibreMap? = null
+    var map:MapLibreMap? = null
     set(value) {
              field = value
         if (field != null){
-            getUserLocation(field!!)
+            //We will create the marker manager here before use
+            markerManager = MarkerViewManager(binding.mapView,field!!)
+            getUserLocationUpdate(field!!)
             setOnLongClick(field!!)
         }
     }
     //This will be activity launcher contract that we will get from the activity
-lateinit var permissionActivityContractLauncher:ActivityResultLauncher<Array<String>>
+    lateinit var permissionActivityContractLauncher:ActivityResultLauncher<Array<String>>
 //This will be the location service  used for getting the user location and other location related services
 
     val locationViewModel: LocationViewModel by activityViewModels<LocationViewModel>()
     val mainPageViewModel :MainPageViewModel by viewModels<MainPageViewModel>()
+    //This will be used to attach the markers to the map
+    lateinit var markerManager :MarkerViewManager
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //Initialize the map
@@ -109,17 +118,21 @@ lateinit var permissionActivityContractLauncher:ActivityResultLauncher<Array<Str
 
 
     }
-    fun getUserLocation(map:MapLibreMap) {
+    fun getUserLocationUpdate(map:MapLibreMap) {
         this.lifecycle.addObserver(MapLocationCallBack(map,this))
     }
     fun updateBottomSheet(weatherReport: WeatherReportModel){
-        binding.tempTv.text = "Temperature : ${(weatherReport.main?.temp?:0.0)} K"
-        binding.windSpeedTv.text = "Wind Speed ${weatherReport.wind?.speed?:0.0} m/s"
+        binding.nameOfLocation.text = weatherReport.name
+        binding.weatherCondition.text = weatherReport.weather?.get(0)?.main?:"No Weather Condition"
+        binding.temp.text = "${weatherReport.main?.temp?:0.0}K"
+        binding.windSpeed.text = "${weatherReport.wind?.speed}m/s"
+
     }
     fun setOnLongClick(map:MapLibreMap){
         map.addOnMapLongClickListener { latLng ->
             //Animate the camera to that position
             map.animateCamera(CameraUpdateFactory.newLatLng(latLng))
+
             //Then we need to get the weather report for that place
              viewLifecycleOwner.lifecycleScope.launch {
 
@@ -137,10 +150,25 @@ lateinit var permissionActivityContractLauncher:ActivityResultLauncher<Array<Str
 
     }
      class MapLocationCallBack( val map: MapLibreMap, val mainPage:MainPage): LocationCallback(),LifecycleEventObserver {
+         //We will need one markerview
+          var markerView:MarkerView
+          val homeMarker :CustomMarkerView
+         init {
+             val homeView = HomeMarkerViewLayoutBinding.inflate(mainPage.layoutInflater,mainPage.binding.mapView,false).root
+            markerView = MarkerView(LatLng(0.0,0.0),homeView)
+             homeMarker = CustomMarkerView(0.0,0.0,markerView)
+             mainPage.markerManager.addMarker(homeMarker.markerView)
+         }
         override fun onLocationResult(location: LocationResult) {
             super.onLocationResult(location)
-         //   Log.i("Location","Latitude:${location.lastLocation?.latitude} Longitude : ${location.lastLocation?.longitude}" )
-            map.cameraPosition = CameraPosition.Builder().target(LatLng(location.lastLocation?.latitude?:0.0,location.lastLocation?.longitude?:0.0)).build()
+            map.animateCamera(CameraUpdateFactory.newLatLng(LatLng(location.lastLocation?.latitude?:0.0,location.lastLocation?.longitude?:0.0)))
+            //When we get the users location we will use attach a a marker there if there is a longitude and latitude
+            val latestLocation = location.lastLocation
+            if( latestLocation!= null) {
+                Log.i("Location","Latitude : ${latestLocation.latitude}, Longitude: ${latestLocation.longitude}")
+                    homeMarker.setLatLng(latestLocation.latitude,latestLocation.longitude)
+                }
+
         }
 
         override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
@@ -159,6 +187,9 @@ lateinit var permissionActivityContractLauncher:ActivityResultLauncher<Array<Str
         }
     }
 
+//We need to add a marker view for when a user long clicks on the map
+    //We can set there to a drop off or pick up station
+    //There will also be a location marker
     override fun onStop() {
         super.onStop()
         binding.mapView.onStop()
@@ -171,6 +202,7 @@ lateinit var permissionActivityContractLauncher:ActivityResultLauncher<Array<Str
     override fun onDestroy() {
         super.onDestroy()
         binding.mapView.onDestroy()
+        markerManager.onDestroy()
     }
 
     override fun onPause() {

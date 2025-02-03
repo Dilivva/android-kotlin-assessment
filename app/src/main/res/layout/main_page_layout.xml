@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    >
+<org.maplibre.android.maps.MapView
+    android:id="@+id/map_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"/>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+        >
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/weather_report"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingHorizontal="4dp">
+
+            <TextView
+                android:id="@+id/name_of_location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="PortHarcourt" />
+
+            <TextView
+                android:id="@+id/weather_condition"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="@id/weather_icon"
+                app:layout_constraintEnd_toStartOf="@id/weather_icon"
+                app:layout_constraintTop_toTopOf="@id/weather_icon"
+                tools:text="Rain" />
+
+            <ImageView
+                android:id="@+id/weather_icon"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/temp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/name_of_location"
+                tools:text="98C" />
+
+            <TextView
+                android:id="@+id/wind_speed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/temp"
+                tools:text="10m/s" />
+
+            <TextView
+                android:id="@+id/delivery_recommendations"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/wind_speed"
+                tools:text="Delivery Recommended" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/pickup_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PickUp Station"
+                app:layout_constraintEnd_toStartOf="@+id/delivery_button"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/delivery_recommendations" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/delivery_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Delivery Station"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toEndOf="@+id/pickup_button"
+                app:layout_constraintTop_toBottomOf="@id/delivery_recommendations" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </FrameLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
