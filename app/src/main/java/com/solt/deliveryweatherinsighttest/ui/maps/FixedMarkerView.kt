@@ -6,7 +6,7 @@ import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.plugins.markerview.MarkerView
 import org.maplibre.android.plugins.markerview.MarkerView.OnPositionUpdateListener
 
-class FixedPositionUpdateListener( val latLng: LatLng,val view: View,val map: MapLibreMap) : MarkerView(latLng,view),OnPositionUpdateListener {
+class FixedMarkerView( val latLng: LatLng,val view: View,val map: MapLibreMap) : MarkerView(latLng,view),OnPositionUpdateListener {
     init {
         setOnPositionUpdateListener(this)
     }

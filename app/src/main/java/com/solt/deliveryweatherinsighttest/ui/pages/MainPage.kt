@@ -1,5 +1,6 @@
 package com.solt.deliveryweatherinsighttest.ui.pages
 
+import FixedMarkerView
 import android.Manifest
 import android.graphics.Color
 import android.os.Build
@@ -153,7 +154,7 @@ class MainPage: Fragment() {
           val homeMarker :CustomMarkerView
          init {
              val homeView = HomeMarkerViewLayoutBinding.inflate(mainPage.layoutInflater,mainPage.binding.mapView,false).root
-            markerView = MarkerView(LatLng(0.0,0.0),homeView)
+            markerView = FixedMarkerView(LatLng(0.0,0.0),homeView,map)
              homeMarker = CustomMarkerView(0.0,0.0,markerView)
              mainPage.markerManager.addMarker(homeMarker.markerView)
          }
