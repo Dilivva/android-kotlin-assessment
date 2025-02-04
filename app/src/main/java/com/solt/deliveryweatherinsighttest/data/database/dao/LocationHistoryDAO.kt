@@ -6,6 +6,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import com.solt.deliveryweatherinsighttest.data.database.model.LocationHistoryEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface LocationHistoryDAO {
@@ -22,7 +23,7 @@ interface LocationHistoryDAO {
 
     //Get the last five location History entries
     @Query("SELECT * FROM LocationHistoryEntity ORDER BY timeStamp DESC LIMIT 5 ")
-   suspend fun getLastFiveLocationHistoryEntries():List<LocationHistoryEntity>
+ fun getLastFiveLocationHistoryEntries(): Flow<List<LocationHistoryEntity>>
 
     //Insertion
     @Insert

@@ -8,9 +8,10 @@ import com.solt.deliveryweatherinsighttest.data.database.dao.LocationHistoryDAO
 import com.solt.deliveryweatherinsighttest.data.database.database.LocationHistoryDatabase
 import com.solt.deliveryweatherinsighttest.data.remote.Utils
 import com.solt.deliveryweatherinsighttest.data.remote.dao.WeatherReportDAO
+import com.solt.deliveryweatherinsighttest.data.database.repository.LocationHistoryImpl
+import com.solt.deliveryweatherinsighttest.data.database.repository.LocationHistoryRepository
 import com.solt.deliveryweatherinsighttest.data.remote.repository.WeatherRepository
 import com.solt.deliveryweatherinsighttest.data.remote.repository.WeatherRepositoryImpl
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -71,4 +72,8 @@ import javax.inject.Singleton
         fun providesLocationHistoryDAO(database: LocationHistoryDatabase):LocationHistoryDAO{
          return database.locationHistoryDAO()
     }
+    @Provides
+       fun providesLocationHistoryRepository(locationHistoryImpl: LocationHistoryImpl): LocationHistoryRepository {
+           return locationHistoryImpl
+       }
 }

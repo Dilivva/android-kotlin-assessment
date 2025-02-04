@@ -99,6 +99,10 @@ dependencies {
     kapt("com.google.dagger:hilt-android-compiler:2.51.1")
     //Marker View  for Map Libre
     implementation("org.maplibre.gl:android-plugin-markerview-v9:3.0.2")
+    //Paging support
+    val paging_version = "3.3.5"
+    implementation("androidx.paging:paging-runtime:$paging_version")
+
 
 
 }
