@@ -13,9 +13,10 @@ import com.solt.deliveryweatherinsighttest.ui.adapters.LocationHistoryListAdapte
 import com.solt.deliveryweatherinsighttest.ui.adapters.LocationHistoryPagingAdapter
 import com.solt.deliveryweatherinsighttest.ui.viewmodel.InfoViewModel
 import dagger.Binds
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-
+@AndroidEntryPoint
 class InfoPage:Fragment() {
     //This page will display information about history
     lateinit var binding: InfoPageLayoutBinding
@@ -23,7 +24,7 @@ class InfoPage:Fragment() {
     lateinit var locationHistoryListAdapter :LocationHistoryListAdapter
     //This is when we want to display all the location history
     lateinit var locationHistoryPagingAdapter: LocationHistoryPagingAdapter
-    val viewModel by viewModels<InfoViewModel>()
+    val infoViewModel:InfoViewModel by viewModels<InfoViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,8 +37,8 @@ class InfoPage:Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-         locationHistoryPagingAdapter = LocationHistoryPagingAdapter()
-        locationHistoryListAdapter = LocationHistoryListAdapter()
+         locationHistoryPagingAdapter = LocationHistoryPagingAdapter{infoViewModel.deleteLocationHistoryEntity(it)}
+        locationHistoryListAdapter = LocationHistoryListAdapter{infoViewModel.deleteLocationHistoryEntity(it)}
 
         //Set up the recycler view
         binding.historyList.apply {
@@ -57,12 +58,12 @@ class InfoPage:Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             //For Paging
             launch {
-                viewModel.getLocationHistory().collectLatest {
+                infoViewModel.getLocationHistory().collectLatest {
                     locationHistoryPagingAdapter.submitData(it)
                 }
             }
             launch {
-                viewModel.getLastFiveLocations().collectLatest {
+                infoViewModel.getLastFiveLocations().collectLatest {
                     locationHistoryListAdapter.submitList(it)
                 }
             }

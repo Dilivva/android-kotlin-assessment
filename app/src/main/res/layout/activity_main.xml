@@ -18,25 +18,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:navGraph="@navigation/main_app_nav_graph" />
 
-    <FrameLayout
-        android:id="@+id/infoBox"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:elevation="5dp"
-        android:visibility="gone"
-        android:background="@drawable/rounded_rect_bg"
-        android:paddingVertical="4dp"
-        android:layout_marginHorizontal="4dp"
-        app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
 
-        <TextView
-            android:id="@+id/infoText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            tools:text="This will be the info text "
-            android:layout_gravity="center"/></FrameLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigationView"
@@ -44,5 +26,6 @@
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:menu="@menu/bottom_nav_menu"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

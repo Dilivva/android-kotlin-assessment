@@ -1,6 +1,8 @@
 package com.solt.deliveryweatherinsighttest.ui.pages
 
 import android.Manifest
+import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -19,6 +21,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
+import com.google.android.material.snackbar.Snackbar
 import com.solt.deliveryweatherinsighttest.MainActivity
 import com.solt.deliveryweatherinsighttest.data.remote.model.weather.WeatherReportModel
 import com.solt.deliveryweatherinsighttest.databinding.HomeMarkerViewLayoutBinding
@@ -39,7 +42,7 @@ import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.plugins.markerview.MarkerView
 import org.maplibre.android.plugins.markerview.MarkerViewManager
 import javax.inject.Inject
-
+const val LOCATION_HISTORY_ITEM = "location_history_item"
 @AndroidEntryPoint
 class MainPage: Fragment() {
     lateinit var binding: MainPageLayoutBinding
@@ -53,10 +56,11 @@ class MainPage: Fragment() {
             markerManager = MarkerViewManager(binding.mapView,field!!)
             getUserLocationUpdate(field!!)
             setOnLongClick(field!!)
+            //Then move to the location history camera
+            MoveToLocationHistoryIfThere(field!!)
         }
     }
-    //This will be activity launcher contract that we will get from the activity
-    lateinit var permissionActivityContractLauncher:ActivityResultLauncher<Array<String>>
+
 //This will be the location service  used for getting the user location and other location related services
 
     val locationViewModel: LocationViewModel by activityViewModels<LocationViewModel>()
@@ -65,21 +69,10 @@ class MainPage: Fragment() {
     lateinit var markerManager :MarkerViewManager
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         //Initialize the map
         MapLibre.getInstance(requireContext())
-        //We will need to show a dialog if the use rejects the permission as it is essential for the app
-        //And get the user location if the permission is granted
-        permissionActivityContractLauncher = requireActivity().registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){
-            val fineLocationGranted = it[Manifest.permission.ACCESS_FINE_LOCATION]
-            val coarseLocationGranted = it[Manifest.permission.ACCESS_COARSE_LOCATION]
-            if (fineLocationGranted == true && coarseLocationGranted ==true){
-                //Show that the permission
-                //The location will be gotten when the map is ready
-            }
-            else{
-                //Show the dialog
-            }
-        }
+
     }
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -100,7 +93,10 @@ class MainPage: Fragment() {
         //Check for location permission
         val hasLocationPermissionsBeenGranted =locationViewModel.checkIfLocationPermissionsHaveBeenGranted(requireActivity() as AppCompatActivity)
         if (!hasLocationPermissionsBeenGranted){
-            permissionActivityContractLauncher.launch(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION))
+            //We will get the launcher from the activity
+            val activity = requireActivity() as MainActivity
+
+            activity.permissionActivityContractLauncher.launch(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION))
         }
         //Set up the map
         binding.mapView.getMapAsync {
@@ -144,6 +140,8 @@ class MainPage: Fragment() {
                     Log.i("Weather","Error ${it.message}")
                 }
             }
+            //Then add the place to location history
+            mainPageViewModel.insertLocationIntoHistory(latLng.latitude,latLng.longitude)
 
             true
         }
@@ -176,7 +174,10 @@ class MainPage: Fragment() {
             when(event){
                 Lifecycle.Event.ON_RESUME->{
 
-                   mainPage.locationViewModel.requestLocationUpdates(mainPage,this){(mainPage.requireActivity() as MainActivity).showFailureMessage(it)}
+                   mainPage.locationViewModel.requestLocationUpdates(mainPage,this){
+                   //Just show a snackbar
+                       mainPage.showErrorSnackBar(it)
+                    }
                 }
                 Lifecycle.Event.ON_PAUSE->{
 
@@ -190,6 +191,40 @@ class MainPage: Fragment() {
 //We need to add a marker view for when a user long clicks on the map
     //We can set there to a drop off or pick up station
     //There will also be a location marker
+
+    //ErrorSnackBar
+    fun showErrorSnackBar(errorMessage:String){
+        val snackBar = Snackbar.make(binding.root,errorMessage,Snackbar.LENGTH_SHORT)
+        snackBar.setTextColor(Color.RED)
+        snackBar.show()
+    }
+    fun showSuccessSnackBar(successMessage:String){
+        val snackBar = Snackbar.make(binding.root,successMessage,Snackbar.LENGTH_SHORT)
+        snackBar.setTextColor(Color.GREEN)
+        snackBar.show()
+    }
+
+    //If the user clicks on an location item history it will take him to the map and move the camera to that location
+    // so we need to get the location
+    fun MoveToLocationHistoryIfThere(map: MapLibreMap){
+        val args = arguments
+        if(args !=null) {
+            val locationHistoryParcel =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    args.getParcelable(LOCATION_HISTORY_ITEM, LatLng::class.java)
+                } else {
+                    try {
+
+
+                        args.getParcelable<LatLng>(LOCATION_HISTORY_ITEM)
+                    }catch (e:Exception){null}
+                }
+
+            //If there is a location history //Then we will update the map with the location history point
+            if (locationHistoryParcel != null) map.animateCamera(CameraUpdateFactory.newLatLng(locationHistoryParcel))
+        }
+
+    }
     override fun onStop() {
         super.onStop()
         binding.mapView.onStop()
