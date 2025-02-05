@@ -27,4 +27,19 @@ class GeocodingRepositoryImpl @Inject constructor(val geocodingApi:GeoCodeApiDAO
          }
     }
 
+    override suspend fun getNameByLatLng(latitude: Double, longitude: Double): OperationResult {
+        return withContext(Dispatchers.IO){
+            try {
+                val result = geocodingApi.getNameByLatLng(Utils.BASE_REVERSE_GEOCODING_URL,latitude,longitude,BuildConfig.geoApifyKey)
+                val resultAsModel = result.toModel()
+                OperationResult.Success(resultAsModel)
+            }catch (e:CancellationException){
+                //Throw it back as the coroutine needs it
+                throw  e
+            }catch (e:Exception){
+                OperationResult.Failure(e)
+            }
+        }
+    }
+
 }

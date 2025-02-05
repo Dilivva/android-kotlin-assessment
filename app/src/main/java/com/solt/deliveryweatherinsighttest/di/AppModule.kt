@@ -11,6 +11,8 @@ import com.solt.deliveryweatherinsighttest.data.remote.dao.WeatherReportDAO
 import com.solt.deliveryweatherinsighttest.data.database.repository.LocationHistoryImpl
 import com.solt.deliveryweatherinsighttest.data.database.repository.LocationHistoryRepository
 import com.solt.deliveryweatherinsighttest.data.remote.dao.GeoCodeApiDAO
+import com.solt.deliveryweatherinsighttest.data.remote.repository.GeocodingRepository
+import com.solt.deliveryweatherinsighttest.data.remote.repository.GeocodingRepositoryImpl
 import com.solt.deliveryweatherinsighttest.data.remote.repository.WeatherRepository
 import com.solt.deliveryweatherinsighttest.data.remote.repository.WeatherRepositoryImpl
 import dagger.Module
@@ -73,6 +75,10 @@ import javax.inject.Singleton
      fun providesWeatherRepository( apiService:WeatherReportDAO): WeatherRepository{
          return WeatherRepositoryImpl(apiService)
      }
+    @Provides
+    fun providesGeoCodingRepository( apiService:GeoCodeApiDAO): GeocodingRepository{
+        return GeocodingRepositoryImpl(apiService)
+    }
     //Room
     @Provides
     @Singleton

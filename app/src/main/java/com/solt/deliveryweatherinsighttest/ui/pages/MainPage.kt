@@ -211,8 +211,15 @@ class MainPage: Fragment() {
 
                 mainPageViewModel.getWeatherReport(latLng.longitude,latLng.latitude,{
                     //We will update the data in bottom sheet
-                    Log.i("Weather",it.main?.temp.toString())
                     updateBottomSheet(it)
+                    //Now we will try and get the name from the weather report
+                    //If not available we will use the one give to us
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        val result = mainPageViewModel.getLocationNameByLatLng(latLng.latitude,latLng.longitude)
+                        val name = result?.listOfSearchResults?.get(0)?.name
+                        val nameOfLocation = name?:it.name?:"Unknown"
+                        binding.nameOfLocation.text = nameOfLocation
+                    }
                 }){
                     Log.i("Weather","Error ${it.message}")
                 }

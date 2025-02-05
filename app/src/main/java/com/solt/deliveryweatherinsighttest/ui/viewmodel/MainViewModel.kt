@@ -11,6 +11,7 @@ import com.solt.deliveryweatherinsighttest.data.remote.model.geocode_forward.Nam
 import com.solt.deliveryweatherinsighttest.data.remote.model.util.OperationResult
 import com.solt.deliveryweatherinsighttest.data.remote.repository.WeatherRepository
 import com.solt.deliveryweatherinsighttest.data.remote.model.weather.WeatherReportModel
+import com.solt.deliveryweatherinsighttest.data.remote.repository.GeocodingRepository
 import com.solt.deliveryweatherinsighttest.data.remote.repository.GeocodingRepositoryImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -20,7 +21,7 @@ import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
-class MainPageViewModel @Inject constructor(val weatherRepo: WeatherRepository, val locationHistoryRepository: LocationHistoryRepository,val geocodingRepositoryImpl: GeocodingRepositoryImpl): ViewModel() {
+class MainPageViewModel @Inject constructor(val weatherRepo: WeatherRepository, val locationHistoryRepository: LocationHistoryRepository,val geocodingRepository: GeocodingRepository): ViewModel() {
 //Get the weather report when never there is a click on the map
     suspend fun getWeatherReport(longitude:Double, latitude:Double,onSuccess:(WeatherReportModel)->Unit,onFailure:(Exception)->Unit){
     when(val result = weatherRepo.getWeatherReportByLocation(longitude,latitude)){
@@ -44,7 +45,7 @@ class MainPageViewModel @Inject constructor(val weatherRepo: WeatherRepository, 
 
     //We will search for the  location if there is an error we just return null
    suspend fun searchForLocationByName(name:String):NameToLocationDisplayModel?{
-        val result = geocodingRepositoryImpl.searchForLocationByName(name)
+        val result = geocodingRepository.searchForLocationByName(name)
         return when(result){
            is OperationResult.Failure -> {
                Log.i("Search ","${result.e.message}")
@@ -54,4 +55,15 @@ class MainPageViewModel @Inject constructor(val weatherRepo: WeatherRepository, 
        }
     }
 
+    //We will use this get the name of the location for the weather report and location History
+    suspend fun getLocationNameByLatLng(latitude: Double,longitude: Double):NameToLocationDisplayModel?{
+        val result = geocodingRepository.getNameByLatLng(latitude,longitude)
+        return when(result){
+            is OperationResult.Failure -> {
+                Log.i("Search ","${result.e.message}")
+                null
+            }
+            is OperationResult.Success<*> -> result.data as NameToLocationDisplayModel
+        }
+    }
 }

@@ -5,4 +5,5 @@ import com.solt.deliveryweatherinsighttest.data.remote.model.util.OperationResul
 
 interface GeocodingRepository {
     suspend fun searchForLocationByName(  name:String):OperationResult
+     suspend fun getNameByLatLng(latitude:Double,longitude:Double):OperationResult
 }

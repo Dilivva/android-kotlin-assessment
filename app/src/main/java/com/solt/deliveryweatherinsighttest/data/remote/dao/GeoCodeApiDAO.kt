@@ -9,4 +9,8 @@ import retrofit2.http.Url
 interface GeoCodeApiDAO {
     @GET()
    suspend fun getLatLngByLocationName(@Url url:String, @Query("text") searchQuery:String, @Query ("apiKey")key:String): NameToLocation
+
+   //This is reverser geocoding that is getting the name by lat /lng
+   @GET()
+   suspend fun getNameByLatLng(@Url url: String,@Query("lat")latitude:Double,@Query("lon") longitude:Double,@Query ("apiKey")key:String):NameToLocation
 }
