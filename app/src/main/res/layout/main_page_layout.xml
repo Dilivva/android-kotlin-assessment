@@ -6,20 +6,26 @@
     android:layout_height="match_parent"
     android:layout_width="match_parent"
     >
-<org.maplibre.android.maps.MapView
-    android:id="@+id/map_view"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"/>
-    <FrameLayout
+
+    <org.maplibre.android.maps.MapView
+        android:id="@+id/map_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <LinearLayout
+        android:id="@+id/weather_bottom_sheet"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+        android:theme="@style/Theme.BottomSheetStyle"
         >
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/weather_report"
+            android:id="@+id/weather_report_main"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:paddingVertical="4dp"
             android:paddingHorizontal="4dp">
 
             <TextView
@@ -40,20 +46,38 @@
                 app:layout_constraintTop_toTopOf="@id/weather_icon"
                 tools:text="Rain" />
 
+            <TextView
+                android:id="@+id/weather_condition_full"
+                android:layout_width="0dp"
+                android:layout_marginTop="4dp"
+                android:layout_height="wrap_content"
+
+
+                app:layout_constraintEnd_toEndOf="@+id/weather_condition"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/name_of_location"
+                tools:text="Rain" />
+
             <ImageView
                 android:id="@+id/weather_icon"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
-
+        </androidx.constraintlayout.widget.ConstraintLayout>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/weather_report_additional"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingVertical="4dp"
+    android:paddingHorizontal="4dp">
             <TextView
                 android:id="@+id/temp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/name_of_location"
+                app:layout_constraintTop_toTopOf="parent"
                 tools:text="98C" />
 
             <TextView
@@ -70,6 +94,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
+
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/wind_speed"
@@ -82,6 +107,7 @@
                 android:text="PickUp Station"
                 app:layout_constraintEnd_toStartOf="@+id/delivery_button"
                 app:layout_constraintHorizontal_bias="0.5"
+                android:layout_marginTop="4dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/delivery_recommendations" />
 
@@ -90,10 +116,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Delivery Station"
+                android:layout_marginTop="4dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toEndOf="@+id/pickup_button"
                 app:layout_constraintTop_toBottomOf="@id/delivery_recommendations" />
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </FrameLayout>
+    </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

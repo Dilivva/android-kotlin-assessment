@@ -103,6 +103,9 @@ dependencies {
     val paging_version = "3.3.5"
     implementation("androidx.paging:paging-runtime:$paging_version")
 
+    //Glide for loading images
+    implementation ("com.github.bumptech.glide:glide:4.16.0")
+
 
 
 }

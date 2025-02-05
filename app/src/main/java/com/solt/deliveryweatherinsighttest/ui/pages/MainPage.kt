@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -20,16 +21,20 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import com.solt.deliveryweatherinsighttest.MainActivity
+import com.solt.deliveryweatherinsighttest.data.remote.Utils
 import com.solt.deliveryweatherinsighttest.data.remote.model.weather.WeatherReportModel
 import com.solt.deliveryweatherinsighttest.databinding.HomeMarkerViewLayoutBinding
 import com.solt.deliveryweatherinsighttest.databinding.MainPageLayoutBinding
 import com.solt.deliveryweatherinsighttest.ui.maps.CustomMarkerView
 
 import com.solt.deliveryweatherinsighttest.ui.maps.MapTiles
+import com.solt.deliveryweatherinsighttest.ui.utils.WeatherDeliveryRecommendations
 import com.solt.deliveryweatherinsighttest.ui.viewmodel.LocationViewModel
 import com.solt.deliveryweatherinsighttest.ui.viewmodel.MainPageViewModel
 import com.solt.deliveryweatherinsighttest.utils.LocationService
@@ -108,6 +113,18 @@ class MainPage: Fragment() {
         }
         //We also need to set up the bottom sheet to show when the user long clicks on the any point in the map and display a weather information
         //That will be set up when the map is ready
+    //Set the bottom sheet attributes
+       val bottomSheetBehaviour = BottomSheetBehavior.from(binding.weatherBottomSheet)
+        //We will also add a bottom sheet callback
+        bottomSheetBehaviour.apply {
+            isDraggable = true
+
+        }
+        //We need to set the  peek height to the height of the weather report main section
+        //This will be don on the before for draw
+        binding.weatherReportMain.doOnPreDraw {
+            bottomSheetBehaviour.peekHeight= it.height
+        }
 
 
 
@@ -121,9 +138,15 @@ class MainPage: Fragment() {
     fun updateBottomSheet(weatherReport: WeatherReportModel){
         binding.nameOfLocation.text = weatherReport.name
         binding.weatherCondition.text = weatherReport.weather?.get(0)?.main?:"No Weather Condition"
-        binding.temp.text = "${weatherReport.main?.temp?:0.0}K"
+        binding.temp.text = "${weatherReport.main?.temp?:0.0}C"
         binding.windSpeed.text = "${weatherReport.wind?.speed}m/s"
-
+        binding.weatherConditionFull.text = weatherReport.weather?.get(0)?.description?:"No Weather Condition"
+        //Load the image with glide
+        Glide.with(binding.weatherIcon).load("${Utils.BASE_WEATHER_ICON_URL}${weatherReport.weather?.get(0)?.icon}${Utils.ICON_ADDITIONAL_FORMAT}")
+            .into(binding.weatherIcon)
+        //We will now calculate for the weather delivery recommendation
+        val recommendation = WeatherDeliveryRecommendations.getWeatherDeliveryConditionBasedOnCode(weatherReport.weather?.get(0)?.id?:0)
+        binding.deliveryRecommendations.text =recommendation.message
     }
     fun setOnLongClick(map:MapLibreMap){
         map.addOnMapLongClickListener { latLng ->

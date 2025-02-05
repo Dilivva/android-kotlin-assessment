@@ -3,9 +3,14 @@
     <style name="Base.Theme.DeliveryWeatherInsightTest" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your dark theme here. -->
         <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="bottomSheetStyle">@style/BottomSheetStyle</item>
     </style>
     <style name="BottomSheetStyle" parent="Widget.Material3.BottomSheet">
         <item name="behavior_peekHeight">20dp</item>
         <item name="behavior_hideable">true</item>
+    </style>
+    <style name="Theme.BottomSheetStyle" parent="Theme.DeliveryWeatherInsightTest">
+       <item name="android:background">?colorPrimarySurface</item>
+        <item name="android:textColor">?colorPrimary</item>
     </style>
 </resources>

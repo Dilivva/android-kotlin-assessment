@@ -2,7 +2,7 @@ package com.solt.deliveryweatherinsighttest.ui.adapters
 
 import android.os.Build
 import android.os.Bundle
-import android.transition.Slide
+
 import android.transition.TransitionManager
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +13,7 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import androidx.transition.Slide
 import com.solt.deliveryweatherinsighttest.R
 import com.solt.deliveryweatherinsighttest.data.database.model.LocationHistoryEntity
 import com.solt.deliveryweatherinsighttest.databinding.HistoryItemLayoutBinding
@@ -88,7 +89,7 @@ class LocationHistoryListAdapter(val onDelete: (LocationHistoryEntity) -> Unit):
                   //Make the delete layout visible if not visible
                   root.setOnLongClickListener {
                       //Animate the visibility
-                      TransitionManager.beginDelayedTransition(root, Slide())
+                      TransitionManager.beginDelayedTransition(root, )
                       deleteLayout.visibility = View.VISIBLE
                       true
                   }
@@ -101,7 +102,7 @@ class LocationHistoryListAdapter(val onDelete: (LocationHistoryEntity) -> Unit):
                   root.setOnClickListener {
                       when(deleteLayout.visibility){
                           View.VISIBLE -> {
-                              TransitionManager.beginDelayedTransition(root, Slide())
+                              TransitionManager.beginDelayedTransition(root)
                               deleteLayout.visibility = View.GONE
                           }
                           else->{
