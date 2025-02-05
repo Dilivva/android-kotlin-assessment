@@ -5,10 +5,13 @@ import android.Manifest
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -21,6 +24,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
@@ -31,6 +35,7 @@ import com.solt.deliveryweatherinsighttest.data.remote.Utils
 import com.solt.deliveryweatherinsighttest.data.remote.model.weather.WeatherReportModel
 import com.solt.deliveryweatherinsighttest.databinding.HomeMarkerViewLayoutBinding
 import com.solt.deliveryweatherinsighttest.databinding.MainPageLayoutBinding
+import com.solt.deliveryweatherinsighttest.ui.adapters.GeoCodedSearchAdapter
 import com.solt.deliveryweatherinsighttest.ui.maps.CustomMarkerView
 
 import com.solt.deliveryweatherinsighttest.ui.maps.MapTiles
@@ -39,6 +44,10 @@ import com.solt.deliveryweatherinsighttest.ui.viewmodel.LocationViewModel
 import com.solt.deliveryweatherinsighttest.ui.viewmodel.MainPageViewModel
 import com.solt.deliveryweatherinsighttest.utils.LocationService
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import org.maplibre.android.MapLibre
 import org.maplibre.android.camera.CameraPosition
@@ -52,8 +61,8 @@ const val LOCATION_HISTORY_ITEM = "location_history_item"
 @AndroidEntryPoint
 class MainPage: Fragment() {
     lateinit var binding: MainPageLayoutBinding
-//This will be gotten when the map is ready
-//We will also get the user location
+    //This will be gotten when the map is ready
+    //We will also get the user location
     var map:MapLibreMap? = null
     set(value) {
              field = value
@@ -73,6 +82,11 @@ class MainPage: Fragment() {
     val mainPageViewModel :MainPageViewModel by viewModels<MainPageViewModel>()
     //This will be used to attach the markers to the map
     lateinit var markerManager :MarkerViewManager
+
+    //This will be a state flow of the user's search query
+    val flowOfSearchQueries= MutableStateFlow("")
+    //Search adapter
+    val locationSearchAdapter = GeoCodedSearchAdapter()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -91,8 +105,6 @@ class MainPage: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-
         //We need to check for if the location permisson
         //If it is not available we need to call the permission launcher
         //If the permission is not still available after the launcher we need to have default location the map will show the location to
@@ -125,6 +137,47 @@ class MainPage: Fragment() {
         binding.weatherReportMain.doOnPreDraw {
             bottomSheetBehaviour.peekHeight= it.height
         }
+
+        // We need to setup the search up the recycler view adapter
+        binding.searchResultList.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = locationSearchAdapter
+        }
+        //we also need a text watcher for our edit text and attach it
+        val locationSearchTextWatcher = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                //After the text is changed we update the value of the flow
+                flowOfSearchQueries.value = s?.toString()?:""
+            }
+        }
+        binding.searchBar.addTextChangedListener(locationSearchTextWatcher)
+
+        //Now we will monitor the flow of queries and for each search for it location and then submit to the adapter
+        //We will need a time limit to debounce some of the queries
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            flowOfSearchQueries.debounce(200).collectLatest {
+
+                val searchResult = mainPageViewModel.searchForLocationByName(it)
+                Log.i("Search",searchResult?.listOfSearchResults.toString())
+                locationSearchAdapter.submitList(searchResult?.listOfSearchResults)
+
+            }
+        }
+        //Add the clear button which clears the text so that the search bar closes
+        binding.cancelSearch.setOnClickListener {
+            binding.searchBar.text.clear()
+        }
+
+
 
 
 

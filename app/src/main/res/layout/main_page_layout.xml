@@ -6,6 +6,58 @@
     android:layout_height="match_parent"
     android:layout_width="match_parent"
     >
+    <androidx.constraintlayout.widget.ConstraintLayout
+       android:id="@+id/search_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_rect_bg"
+        android:layout_marginHorizontal="12dp"
+        android:layout_gravity="top|center_horizontal"
+        android:elevation="10dp"
+        android:layout_marginTop="12dp">
+
+
+        <ImageButton
+            android:id="@+id/searchIcon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:scaleType="fitCenter"
+            app:layout_constraintBottom_toBottomOf="@+id/search_bar"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/search_icon"
+            android:backgroundTint="@android:color/transparent"/>
+
+        <EditText
+            android:id="@+id/search_bar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+
+            app:layout_constraintEnd_toStartOf="@+id/cancel_search"
+            app:layout_constraintStart_toEndOf="@+id/searchIcon"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/search_result_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxHeight="300dp"
+            android:layout_marginTop="1dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/search_bar" />
+
+        <ImageButton
+            android:id="@+id/cancel_search"
+            android:layout_width="30dp"
+            android:layout_height="40dp"
+            app:layout_constraintBottom_toBottomOf="@+id/search_bar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:scaleType="fitCenter"
+            android:backgroundTint="@android:color/transparent"
+            app:srcCompat="@drawable/cancel_icon" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <org.maplibre.android.maps.MapView
         android:id="@+id/map_view"

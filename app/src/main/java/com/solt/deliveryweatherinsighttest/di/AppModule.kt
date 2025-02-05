@@ -10,6 +10,7 @@ import com.solt.deliveryweatherinsighttest.data.remote.Utils
 import com.solt.deliveryweatherinsighttest.data.remote.dao.WeatherReportDAO
 import com.solt.deliveryweatherinsighttest.data.database.repository.LocationHistoryImpl
 import com.solt.deliveryweatherinsighttest.data.database.repository.LocationHistoryRepository
+import com.solt.deliveryweatherinsighttest.data.remote.dao.GeoCodeApiDAO
 import com.solt.deliveryweatherinsighttest.data.remote.repository.WeatherRepository
 import com.solt.deliveryweatherinsighttest.data.remote.repository.WeatherRepositoryImpl
 import dagger.Module
@@ -23,6 +24,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import retrofit2.Retrofit
+import javax.inject.Qualifier
 import javax.inject.Singleton
 
 //Main Module for Application
@@ -32,9 +34,13 @@ import javax.inject.Singleton
     //First Retrofit ,it will be singleton
     @Provides
     @Singleton
-    fun providesRetrofit(@ApplicationContext context: Context):Retrofit{
+    fun providesRetrofitForWeatherApi(@ApplicationContext context: Context):Retrofit{
        //Converter Factory for Json
-        val jsonConverter =  Json { ignoreUnknownKeys = true }.asConverterFactory("application/json".toMediaType())
+        val jsonConverter =  Json {
+            ignoreUnknownKeys = true
+            isLenient = true
+           coerceInputValues = true
+        }.asConverterFactory("application/json".toMediaType())
         val loggingInterceptor = object : Interceptor {
             override fun intercept(chain: Interceptor.Chain): Response {
                 val request = chain.request().toString()
@@ -47,7 +53,7 @@ import javax.inject.Singleton
 
         }
         val customOkHttpClient = OkHttpClient.Builder().addInterceptor(loggingInterceptor).build()
-       val retrofit = Retrofit.Builder().baseUrl(Utils.BASE_WEATHER_URL).addConverterFactory(jsonConverter).client(customOkHttpClient).build()
+       val retrofit = Retrofit.Builder().baseUrl(Utils.BASE_RETROFIT_URL).addConverterFactory(jsonConverter).client(customOkHttpClient).build()
         return retrofit
     }
     //Next the weather api service , will also be singleton
@@ -55,6 +61,12 @@ import javax.inject.Singleton
     @Singleton
     fun providesWeatherApiService (retrofit:Retrofit):WeatherReportDAO{
         return retrofit.create(WeatherReportDAO::class.java)
+    }
+    //The geocoding api service
+    @Provides
+    @Singleton
+    fun providesGeocodingApiService (retrofit:Retrofit):GeoCodeApiDAO{
+        return retrofit.create(GeoCodeApiDAO::class.java)
     }
 
      @Provides
