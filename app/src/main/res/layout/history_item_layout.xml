@@ -4,20 +4,60 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:paddingHorizontal="4dp"
+    android:paddingVertical="8dp">
 
-    android:paddingStart="4dp">
+    <com.google.android.material.divider.MaterialDivider
+        android:id="@+id/top_divider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/lat_lng"
+        android:id="@+id/name_of_location"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:padding="4dp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/time"
-        app:layout_constraintEnd_toStartOf="@+id/frameLayout"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/top_divider"
         tools:text="Lat :100.00 Lon : 110.03" />
+
+    <TextView
+        android:id="@+id/latitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_marginTop="4dp"
+        android:maxEms="5"
+        android:maxLines="1"
+        android:padding="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/name_of_location"
+        app:layout_constraintVertical_bias="1.0"
+        tools:text="23:34" />
+
+    <TextView
+        android:id="@+id/longitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="4dp"
+        android:maxEms="5"
+        android:maxLines="1"
+        android:padding="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/time"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@id/latitude"
+        app:layout_constraintTop_toBottomOf="@+id/name_of_location"
+        tools:text="23:34" />
 
     <TextView
         android:id="@+id/time"
@@ -26,37 +66,14 @@
         android:layout_marginTop="4dp"
         android:padding="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/frameLayout"
+        android:textSize="12sp"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/lat_lng"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/name_of_location"
         tools:text="23:34" />
 
 
-    <FrameLayout
 
-        android:id="@+id/delete_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:background="?colorSurfaceInverse"
-        android:elevation="-10dp"
-        android:minHeight="60dp"
-        android:padding="4dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ImageButton
-            android:id="@+id/delete_button"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_gravity="center"
-            android:backgroundTint="@android:color/transparent"
-            android:scaleType="fitCenter"
-            app:srcCompat="@drawable/cancel_icon"
-            app:tint="@android:color/holo_red_dark" />
-    </FrameLayout>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

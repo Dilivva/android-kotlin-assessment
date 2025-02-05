@@ -15,6 +15,7 @@ import android.widget.EditText
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -31,6 +32,7 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import com.solt.deliveryweatherinsighttest.MainActivity
+import com.solt.deliveryweatherinsighttest.R
 import com.solt.deliveryweatherinsighttest.data.remote.Utils
 import com.solt.deliveryweatherinsighttest.data.remote.model.weather.WeatherReportModel
 import com.solt.deliveryweatherinsighttest.databinding.HomeMarkerViewLayoutBinding
@@ -87,6 +89,8 @@ class MainPage: Fragment() {
     val flowOfSearchQueries= MutableStateFlow("")
     //Search adapter
     val locationSearchAdapter = GeoCodedSearchAdapter()
+    // Location Pointer One should suffice
+     var locationPointerMarker:CustomMarkerView? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -203,27 +207,29 @@ class MainPage: Fragment() {
     }
     fun setOnLongClick(map:MapLibreMap){
         map.addOnMapLongClickListener { latLng ->
-            //Animate the camera to that position
-            map.animateCamera(CameraUpdateFactory.newLatLng(latLng))
-
-            //Then we need to get the weather report for that place
-             viewLifecycleOwner.lifecycleScope.launch {
-
-                mainPageViewModel.getWeatherReport(latLng.longitude,latLng.latitude,{
-                    //We will update the data in bottom sheet
-                    updateBottomSheet(it)
-                    //Now we will try and get the name from the weather report
-                    //If not available we will use the one give to us
-                    viewLifecycleOwner.lifecycleScope.launch {
-                        val result = mainPageViewModel.getLocationNameByLatLng(latLng.latitude,latLng.longitude)
-                        val name = result?.listOfSearchResults?.get(0)?.name
-                        val nameOfLocation = name?:it.name?:"Unknown"
-                        binding.nameOfLocation.text = nameOfLocation
-                    }
-                }){
-                    Log.i("Weather","Error ${it.message}")
-                }
-            }
+//            //Animate the camera to that position
+//            map.animateCamera(CameraUpdateFactory.newLatLng(latLng))
+//
+//            //Then we need to get the weather report for that place
+//             viewLifecycleOwner.lifecycleScope.launch {
+//
+//                mainPageViewModel.getWeatherReport(latLng.longitude,latLng.latitude,{
+//                    //We will update the data in bottom sheet
+//                    updateBottomSheet(it)
+//                    //Now we will try and get the name from the weather report
+//                    //If not available we will use the one give to us
+//                    viewLifecycleOwner.lifecycleScope.launch {
+//                        val result = mainPageViewModel.getLocationNameByLatLng(latLng.latitude,latLng.longitude)
+//                        val name = result?.listOfSearchResults?.get(0)?.name
+//                        val nameOfLocation = name?:it.name?:"Unknown"
+//                        binding.nameOfLocation.text = nameOfLocation
+//                    }
+//                }){
+//                    Log.i("Weather","Error ${it.message}")
+//                }
+//            }
+            //Now a marker will appear on the screen
+             markLocationOnMap(latLng.latitude,latLng.longitude,map)
             //Then add the place to location history
             mainPageViewModel.insertLocationIntoHistory(latLng.latitude,latLng.longitude)
 
@@ -232,13 +238,12 @@ class MainPage: Fragment() {
 
     }
      class MapLocationCallBack( val map: MapLibreMap, val mainPage:MainPage): LocationCallback(),LifecycleEventObserver {
-         //We will need one markerview
-          var markerView:MarkerView
+         //We will need one markerview for the home location
+
           val homeMarker :CustomMarkerView
          init {
              val homeView = HomeMarkerViewLayoutBinding.inflate(mainPage.layoutInflater,mainPage.binding.mapView,false).root
-            markerView = FixedMarkerView(LatLng(0.0,0.0),homeView,map)
-             homeMarker = CustomMarkerView(0.0,0.0,markerView)
+             homeMarker = CustomMarkerView(0.0,0.0,homeView,mainPage,map)
              mainPage.markerManager.addMarker(homeMarker.markerView)
          }
         override fun onLocationResult(location: LocationResult) {
@@ -273,6 +278,22 @@ class MainPage: Fragment() {
     }
 
 //We need to add a marker view for when a user long clicks on the map
+
+    fun markLocationOnMap(latitude :Double , longitude:Double,map: MapLibreMap){
+        //If the location pointer has not been created create it and if it has update its position
+        val binding = HomeMarkerViewLayoutBinding.inflate(layoutInflater,binding.mapView,false)
+        //The image view will be the location pointer
+        val locationImage = ResourcesCompat.getDrawable(resources, R.drawable.location_icon,requireActivity().theme)
+        binding.icon.setImageDrawable(locationImage)
+        if(locationPointerMarker ==null) {
+            locationPointerMarker = CustomMarkerView(latitude,longitude,binding.root,this,map)
+            markerManager.addMarker(locationPointerMarker!!.markerView)
+        }else{
+            locationPointerMarker!!.setLatLng(latitude,longitude)
+        }
+
+
+    }
     //We can set there to a drop off or pick up station
     //There will also be a location marker
 

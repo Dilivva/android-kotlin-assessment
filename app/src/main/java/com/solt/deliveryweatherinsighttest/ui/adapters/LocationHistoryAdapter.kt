@@ -8,6 +8,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.findViewTreeLifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
@@ -18,6 +21,7 @@ import com.solt.deliveryweatherinsighttest.R
 import com.solt.deliveryweatherinsighttest.data.database.model.LocationHistoryEntity
 import com.solt.deliveryweatherinsighttest.databinding.HistoryItemLayoutBinding
 import com.solt.deliveryweatherinsighttest.ui.pages.LOCATION_HISTORY_ITEM
+import kotlinx.coroutines.launch
 
 import org.maplibre.android.geometry.LatLng
 import java.text.DateFormat
@@ -39,7 +43,7 @@ val locationHistoryDiffUtil = object: DiffUtil.ItemCallback<LocationHistoryEntit
         return oldItem == newItem
 
 }}
-  class LocationHistoryPagingAdapter( val onDelete: (LocationHistoryEntity) -> Unit): PagingDataAdapter<LocationHistoryEntity,LocationHistoryItemViewHolder>(
+  class LocationHistoryPagingAdapter( val fragment: Fragment,val onDelete: (LocationHistoryEntity) -> Unit,val getLocationNameByLatLng:suspend (Double,Double)->String): PagingDataAdapter<LocationHistoryEntity,LocationHistoryItemViewHolder>(
       locationHistoryDiffUtil) {
       override fun onBindViewHolder(holder: LocationHistoryItemViewHolder, position: Int) {
           holder.bind(getItem(position))
@@ -50,20 +54,20 @@ val locationHistoryDiffUtil = object: DiffUtil.ItemCallback<LocationHistoryEntit
           viewType: Int
       ): LocationHistoryItemViewHolder {
          val binding = HistoryItemLayoutBinding.inflate(LayoutInflater.from(parent.context),parent,false)
-          return LocationHistoryItemViewHolder(binding,onDelete)
+          return LocationHistoryItemViewHolder(fragment,binding,onDelete,getLocationNameByLatLng)
       }
 
 
   }
 
-class LocationHistoryListAdapter(val onDelete: (LocationHistoryEntity) -> Unit):ListAdapter<LocationHistoryEntity,LocationHistoryItemViewHolder>(
+class LocationHistoryListAdapter( val fragment: Fragment,val onDelete: (LocationHistoryEntity) -> Unit,val getLocationNameByLatLng:suspend (Double,Double)->String):ListAdapter<LocationHistoryEntity,LocationHistoryItemViewHolder>(
     locationHistoryDiffUtil){
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
     ): LocationHistoryItemViewHolder {
         val binding = HistoryItemLayoutBinding.inflate(LayoutInflater.from(parent.context),parent,false)
-        return LocationHistoryItemViewHolder(binding, onDelete)
+        return LocationHistoryItemViewHolder(fragment,binding, onDelete,getLocationNameByLatLng)
     }
 
 
@@ -72,40 +76,37 @@ class LocationHistoryListAdapter(val onDelete: (LocationHistoryEntity) -> Unit):
     }
 
 }
-  class LocationHistoryItemViewHolder(val binding:HistoryItemLayoutBinding,val onDelete:(LocationHistoryEntity)->Unit): RecyclerView.ViewHolder(binding.root){
+  class LocationHistoryItemViewHolder(val fragment:Fragment,val binding:HistoryItemLayoutBinding,val onDelete:(LocationHistoryEntity)->Unit,val getLocationNameByLatLng:suspend (Double,Double)->String): RecyclerView.ViewHolder(binding.root){
       fun bind(locationHistory:LocationHistoryEntity?) {
           if (locationHistory != null) {
               binding.apply {
+                  // We try and get the name from the lat and lng
+                  fragment.viewLifecycleOwner.lifecycleScope.launch {
+                      val locationName = getLocationNameByLatLng(locationHistory.latitude,locationHistory.longitude)
+                      nameOfLocation.text = locationName
+                  }
                   //Set the Latitude and Longitude
-                  latLng.text =
-                      "Latitude : ${locationHistory.latitude} ,Longitude: ${locationHistory.longitude}"
+                  latitude.text = locationHistory.latitude.toString()
+                  longitude.text = locationHistory.longitude.toString()
                   //Date
                   //We format it first
                   val dateTimeFormatter =
-                      DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.LONG)
+                      DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
                   //Try using android date format
                   val formattedDate = dateTimeFormatter.format(locationHistory.timeStamp)
                   time.text = formattedDate
                   //Make the delete layout visible if not visible
                   root.setOnLongClickListener {
-                      //Animate the visibility
-                      TransitionManager.beginDelayedTransition(root, )
-                      deleteLayout.visibility = View.VISIBLE
+                      //Just delete it
+                      onDelete(locationHistory)
                       true
                   }
                   //When we click on the the x button or the layout  we delete the location history
-                  deleteLayout.setOnClickListener {
-                      onDelete(locationHistory)
-                  }
+
 
                   //Now in the on click if the delete layout is visible make it invisible else go the map page
                   root.setOnClickListener {
-                      when(deleteLayout.visibility){
-                          View.VISIBLE -> {
-                              TransitionManager.beginDelayedTransition(root)
-                              deleteLayout.visibility = View.GONE
-                          }
-                          else->{
+
                               //Navigate to the map page with the longitude and latitude
                               val locationParcel = LatLng(locationHistory.longitude,locationHistory.latitude)
                               val bundle = Bundle().apply {
@@ -120,6 +121,3 @@ class LocationHistoryListAdapter(val onDelete: (LocationHistoryEntity) -> Unit):
 
               }
           }
-      }
-
-  }

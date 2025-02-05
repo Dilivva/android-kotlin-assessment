@@ -37,22 +37,18 @@ class InfoPage:Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-         locationHistoryPagingAdapter = LocationHistoryPagingAdapter{infoViewModel.deleteLocationHistoryEntity(it)}
-        locationHistoryListAdapter = LocationHistoryListAdapter{infoViewModel.deleteLocationHistoryEntity(it)}
+         locationHistoryPagingAdapter = LocationHistoryPagingAdapter(this,{infoViewModel.deleteLocationHistoryEntity(it)}){lat,lon->
+             val locationData = infoViewModel.getLocationNameByLatLng(lat,lon)
+             locationData?.listOfSearchResults?.getOrNull(0)?.name?:"Unknown"
+         }
+
 
         //Set up the recycler view
         binding.historyList.apply {
             layoutManager = LinearLayoutManager(requireContext())
+            adapter = locationHistoryPagingAdapter
         }
         //We set the checkable text view to use the paging adapter if the button is checked
-        binding.toggleButton.setOnCheckedChangeListener { buttonView, isChecked ->
-            when(isChecked){
-                true -> {
-                    binding.historyList.adapter = locationHistoryPagingAdapter
-                }
-                false ->  binding.historyList.adapter = locationHistoryListAdapter
-            }
-        }
 
         //Now we listen for updates from the database
         viewLifecycleOwner.lifecycleScope.launch {
@@ -60,11 +56,6 @@ class InfoPage:Fragment() {
             launch {
                 infoViewModel.getLocationHistory().collectLatest {
                     locationHistoryPagingAdapter.submitData(it)
-                }
-            }
-            launch {
-                infoViewModel.getLastFiveLocations().collectLatest {
-                    locationHistoryListAdapter.submitList(it)
                 }
             }
         }
