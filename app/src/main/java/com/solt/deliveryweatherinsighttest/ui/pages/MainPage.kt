@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -41,6 +42,7 @@ import com.solt.deliveryweatherinsighttest.ui.adapters.GeoCodedSearchAdapter
 import com.solt.deliveryweatherinsighttest.ui.maps.CustomMarkerView
 
 import com.solt.deliveryweatherinsighttest.ui.maps.MapTiles
+import com.solt.deliveryweatherinsighttest.ui.maps.MarkerType
 import com.solt.deliveryweatherinsighttest.ui.utils.WeatherDeliveryRecommendations
 import com.solt.deliveryweatherinsighttest.ui.viewmodel.LocationViewModel
 import com.solt.deliveryweatherinsighttest.ui.viewmodel.MainPageViewModel
@@ -120,6 +122,8 @@ class MainPage: Fragment() {
 
             activity.permissionActivityContractLauncher.launch(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION))
         }
+
+        //The map is not dispatching touch events to the children markers
         //Set up the map
         binding.mapView.getMapAsync {
             //The location will be gotten when the map is ready
@@ -207,27 +211,7 @@ class MainPage: Fragment() {
     }
     fun setOnLongClick(map:MapLibreMap){
         map.addOnMapLongClickListener { latLng ->
-//            //Animate the camera to that position
-//            map.animateCamera(CameraUpdateFactory.newLatLng(latLng))
 //
-//            //Then we need to get the weather report for that place
-//             viewLifecycleOwner.lifecycleScope.launch {
-//
-//                mainPageViewModel.getWeatherReport(latLng.longitude,latLng.latitude,{
-//                    //We will update the data in bottom sheet
-//                    updateBottomSheet(it)
-//                    //Now we will try and get the name from the weather report
-//                    //If not available we will use the one give to us
-//                    viewLifecycleOwner.lifecycleScope.launch {
-//                        val result = mainPageViewModel.getLocationNameByLatLng(latLng.latitude,latLng.longitude)
-//                        val name = result?.listOfSearchResults?.get(0)?.name
-//                        val nameOfLocation = name?:it.name?:"Unknown"
-//                        binding.nameOfLocation.text = nameOfLocation
-//                    }
-//                }){
-//                    Log.i("Weather","Error ${it.message}")
-//                }
-//            }
             //Now a marker will appear on the screen
              markLocationOnMap(latLng.latitude,latLng.longitude,map)
             //Then add the place to location history
@@ -242,8 +226,8 @@ class MainPage: Fragment() {
 
           val homeMarker :CustomMarkerView
          init {
-             val homeView = HomeMarkerViewLayoutBinding.inflate(mainPage.layoutInflater,mainPage.binding.mapView,false).root
-             homeMarker = CustomMarkerView(0.0,0.0,homeView,mainPage,map)
+
+             homeMarker = CustomMarkerView(0.0,0.0,MarkerType.HOME,mainPage,map)
              mainPage.markerManager.addMarker(homeMarker.markerView)
          }
         override fun onLocationResult(location: LocationResult) {
@@ -281,12 +265,12 @@ class MainPage: Fragment() {
 
     fun markLocationOnMap(latitude :Double , longitude:Double,map: MapLibreMap){
         //If the location pointer has not been created create it and if it has update its position
-        val binding = HomeMarkerViewLayoutBinding.inflate(layoutInflater,binding.mapView,false)
+        val binding = HomeMarkerViewLayoutBinding.inflate(layoutInflater)
         //The image view will be the location pointer
         val locationImage = ResourcesCompat.getDrawable(resources, R.drawable.location_icon,requireActivity().theme)
         binding.icon.setImageDrawable(locationImage)
         if(locationPointerMarker ==null) {
-            locationPointerMarker = CustomMarkerView(latitude,longitude,binding.root,this,map)
+            locationPointerMarker = CustomMarkerView(latitude,longitude,MarkerType.LOCATION,this,map)
             markerManager.addMarker(locationPointerMarker!!.markerView)
         }else{
             locationPointerMarker!!.setLatLng(latitude,longitude)
@@ -312,6 +296,7 @@ class MainPage: Fragment() {
     //If the user clicks on an location item history it will take him to the map and move the camera to that location
     // so we need to get the location
     fun MoveToLocationHistoryIfThere(map: MapLibreMap){
+
         val args = arguments
         if(args !=null) {
             val locationHistoryParcel =
