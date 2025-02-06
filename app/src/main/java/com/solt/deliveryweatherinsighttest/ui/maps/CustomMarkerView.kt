@@ -90,7 +90,7 @@ open class CustomMarkerView(var lat:Double, var lon:Double,
                         val nameOfLocation = name?:it.name?:"Unknown"
                         page.binding.nameOfLocation.text = nameOfLocation
                     }
-                page.updateBottomSheet(this@CustomMarkerView.lat,this@CustomMarkerView.lon,it)
+                page.updateBottomSheet(it)
                 setClickListenersForButtons()
 
             }){}

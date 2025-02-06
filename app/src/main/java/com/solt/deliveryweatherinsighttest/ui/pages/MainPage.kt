@@ -81,6 +81,7 @@ class MainPage: Fragment() {
             setOnLongClick(field!!)
             //Then move to the location history camera
             MoveToLocationHistoryIfThere(field!!)
+            getMarkersWhenMapIsReady()
         }
     }
 
@@ -106,6 +107,7 @@ class MainPage: Fragment() {
 
         //Initialize the map
         MapLibre.getInstance(requireContext())
+
 
     }
     override fun onCreateView(
@@ -192,17 +194,9 @@ class MainPage: Fragment() {
         binding.cancelSearch.setOnClickListener {
             binding.searchBar.text.clear()
         }
-
-        //Since we have added markers we will then monitor them and check for change them
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            //Get the current  station markers
-           val  stationMarkersFromDb = mainPageViewModel.getStations()
-
-            updateMarkers(stationMarkersFromDb)
-            mainPageViewModel.getStationsAsFlow().collectLatest {
-                updateMarkers(it)
-            }}
+        //We need to clear the station Markers and Markerviews for the calculation to work
+        currentStationMarkers = emptyList()
+        currentStationMarkersView = mutableListOf()
 
 
 
@@ -213,7 +207,7 @@ class MainPage: Fragment() {
     fun getUserLocationUpdate(map:MapLibreMap) {
         this.lifecycle.addObserver(MapLocationCallBack(map,this))
     }
-    fun updateBottomSheet(latitude:Double,longitude:Double,weatherReport: WeatherReportModel){
+    fun updateBottomSheet(weatherReport: WeatherReportModel){
         binding.nameOfLocation.text = weatherReport.name
         binding.weatherCondition.text = weatherReport.weather?.get(0)?.main?:"No Weather Condition"
         binding.temp.text = "${weatherReport.main?.temp?:0.0}C"
@@ -385,6 +379,21 @@ class MainPage: Fragment() {
             resetBottomSheetButtonsFromStationDelete()
 
         }
+    }
+    fun getMarkersWhenMapIsReady(){
+        //Since we have added markers we will then monitor them and check for change them
+
+        viewLifecycleOwner.lifecycleScope.launch {
+
+            //Get the current  station markers
+            val  stationMarkersFromDb = mainPageViewModel.getStations()
+
+            updateMarkers(stationMarkersFromDb)
+            mainPageViewModel.getStationsAsFlow().collectLatest {
+                updateMarkers(it)
+            }}
+
+
     }
     fun updateMarkers(newList: List<StationEntity>){
         if (map != null) {
