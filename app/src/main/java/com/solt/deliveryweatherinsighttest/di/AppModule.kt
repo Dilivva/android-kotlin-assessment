@@ -5,11 +5,15 @@ import android.util.Log
 import androidx.room.Room
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.solt.deliveryweatherinsighttest.data.database.dao.LocationHistoryDAO
+import com.solt.deliveryweatherinsighttest.data.database.dao.StationDAO
 import com.solt.deliveryweatherinsighttest.data.database.database.LocationHistoryDatabase
+import com.solt.deliveryweatherinsighttest.data.database.database.StationDatabase
 import com.solt.deliveryweatherinsighttest.data.remote.Utils
 import com.solt.deliveryweatherinsighttest.data.remote.dao.WeatherReportDAO
 import com.solt.deliveryweatherinsighttest.data.database.repository.LocationHistoryImpl
 import com.solt.deliveryweatherinsighttest.data.database.repository.LocationHistoryRepository
+import com.solt.deliveryweatherinsighttest.data.database.repository.StationRepository
+import com.solt.deliveryweatherinsighttest.data.database.repository.StationRepositoryImpl
 import com.solt.deliveryweatherinsighttest.data.remote.dao.GeoCodeApiDAO
 import com.solt.deliveryweatherinsighttest.data.remote.repository.GeocodingRepository
 import com.solt.deliveryweatherinsighttest.data.remote.repository.GeocodingRepositoryImpl
@@ -94,4 +98,18 @@ import javax.inject.Singleton
        fun providesLocationHistoryRepository(locationHistoryImpl: LocationHistoryImpl): LocationHistoryRepository {
            return locationHistoryImpl
        }
+    @Provides
+    @Singleton
+    fun providesStationDatabase(@ApplicationContext context: Context): StationDatabase {
+        return    Room.databaseBuilder(context,StationDatabase::class.java,"station.db").build()
+    }
+    @Provides
+    @Singleton
+    fun providesStationDAO(database: StationDatabase):StationDAO{
+        return database.stationDao()
+    }
+    @Provides
+    fun providesStationRepository(stationRepositoryImpl: StationRepositoryImpl): StationRepository   {
+        return stationRepositoryImpl
+    }
 }

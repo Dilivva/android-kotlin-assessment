@@ -34,6 +34,8 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import com.solt.deliveryweatherinsighttest.MainActivity
 import com.solt.deliveryweatherinsighttest.R
+import com.solt.deliveryweatherinsighttest.data.database.model.StationEntity
+import com.solt.deliveryweatherinsighttest.data.database.model.StationType
 import com.solt.deliveryweatherinsighttest.data.remote.Utils
 import com.solt.deliveryweatherinsighttest.data.remote.model.weather.WeatherReportModel
 import com.solt.deliveryweatherinsighttest.databinding.HomeMarkerViewLayoutBinding
@@ -43,6 +45,8 @@ import com.solt.deliveryweatherinsighttest.ui.maps.CustomMarkerView
 
 import com.solt.deliveryweatherinsighttest.ui.maps.MapTiles
 import com.solt.deliveryweatherinsighttest.ui.maps.MarkerType
+import com.solt.deliveryweatherinsighttest.ui.maps.StationMarkerView
+import com.solt.deliveryweatherinsighttest.ui.utils.ListChangeCalculator
 import com.solt.deliveryweatherinsighttest.ui.utils.WeatherDeliveryRecommendations
 import com.solt.deliveryweatherinsighttest.ui.viewmodel.LocationViewModel
 import com.solt.deliveryweatherinsighttest.ui.viewmodel.MainPageViewModel
@@ -93,6 +97,10 @@ class MainPage: Fragment() {
     val locationSearchAdapter = GeoCodedSearchAdapter()
     // Location Pointer One should suffice
      var locationPointerMarker:CustomMarkerView? = null
+    //This is a list of station markers present
+    var currentStationMarkers = emptyList<StationEntity>()
+    ////This is a list of station markers  views present
+    var currentStationMarkersView = mutableListOf<StationMarkerView>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -185,7 +193,16 @@ class MainPage: Fragment() {
             binding.searchBar.text.clear()
         }
 
+        //Since we have added markers we will then monitor them and check for change them
 
+        viewLifecycleOwner.lifecycleScope.launch {
+            //Get the current  station markers
+           val  stationMarkersFromDb = mainPageViewModel.getStations()
+
+            updateMarkers(stationMarkersFromDb)
+            mainPageViewModel.getStationsAsFlow().collectLatest {
+                updateMarkers(it)
+            }}
 
 
 
@@ -196,7 +213,7 @@ class MainPage: Fragment() {
     fun getUserLocationUpdate(map:MapLibreMap) {
         this.lifecycle.addObserver(MapLocationCallBack(map,this))
     }
-    fun updateBottomSheet(weatherReport: WeatherReportModel){
+    fun updateBottomSheet(latitude:Double,longitude:Double,weatherReport: WeatherReportModel){
         binding.nameOfLocation.text = weatherReport.name
         binding.weatherCondition.text = weatherReport.weather?.get(0)?.main?:"No Weather Condition"
         binding.temp.text = "${weatherReport.main?.temp?:0.0}C"
@@ -208,6 +225,8 @@ class MainPage: Fragment() {
         //We will now calculate for the weather delivery recommendation
         val recommendation = WeatherDeliveryRecommendations.getWeatherDeliveryConditionBasedOnCode(weatherReport.weather?.get(0)?.id?:0)
         binding.deliveryRecommendations.text =recommendation.message
+
+
     }
     fun setOnLongClick(map:MapLibreMap){
         map.addOnMapLongClickListener { latLng ->
@@ -278,6 +297,13 @@ class MainPage: Fragment() {
 
 
     }
+    fun resetBottomSheetButtonsFromStationDelete(){
+        binding.pickupButton.apply {
+            text = "Pickup Station"
+        }
+       binding.deliveryButton.visibility = View.VISIBLE
+
+    }
     //We can set there to a drop off or pick up station
     //There will also be a location marker
 
@@ -314,6 +340,67 @@ class MainPage: Fragment() {
             if (locationHistoryParcel != null) map.animateCamera(CameraUpdateFactory.newLatLng(locationHistoryParcel))
         }
 
+    }
+
+    //For clearing the bottom sheet
+    fun clearBottomSheet(){
+        binding.nameOfLocation.text = ""
+        binding.weatherCondition.text =""
+        binding.temp.text = ""
+        binding.windSpeed.text = ""
+        binding.weatherConditionFull.text = ""
+        binding.weatherIcon.setImageDrawable(null)
+        binding.deliveryRecommendations.text =""
+        binding.deliveryButton.setOnClickListener(null)
+        binding.pickupButton.setOnClickListener (null)
+        val bottomSheetBehaviour = BottomSheetBehavior.from(binding.weatherBottomSheet)
+        bottomSheetBehaviour.state = BottomSheetBehavior.STATE_COLLAPSED
+
+
+    }
+
+
+    //for the station markers we need to have a way to calculate the difference between the incoming list and the curent list and return a pair of the list of items in the difference and the operation to carry out
+//And add the ones that are added and removed the ones that are removed
+    fun addMarkersForListChange(listAdded:List<StationEntity>,map: MapLibreMap){
+        listAdded.forEach {
+            val stationMarker = StationMarkerView(it.latitude,it.longitude,CustomMarkerView.getMarkerTypeForStationType(it.stationType),this,map)
+            currentStationMarkersView.add(stationMarker)
+            markerManager.addMarker(stationMarker.markerView)
+        }
+    }
+    fun removeMarkersForListChanged(listRemoved:List<StationEntity>){
+        listRemoved.forEach {entity->
+
+            //Get the marker view with latitude from the list ofMarkerView
+            val stationMarker =currentStationMarkersView.find {
+                it.lat ==entity.latitude && it.lon== entity.longitude
+            }
+            Log.i("StationMarker",stationMarker.toString())
+            Log.i("StationMarker","${entity.latitude},${entity.longitude}")
+            if(stationMarker !=null){
+                markerManager.removeMarker(stationMarker.markerView)
+                currentStationMarkersView.remove(stationMarker)
+            }
+            resetBottomSheetButtonsFromStationDelete()
+
+        }
+    }
+    fun updateMarkers(newList: List<StationEntity>){
+        if (map != null) {
+            //First we compare the new list with the current list
+            val listChange = ListChangeCalculator.getDifferenceBetweenCurrentListAndNewList(
+                currentStationMarkers,
+                newList
+            )
+            Log.i("ListChange",listChange.toString())
+            //We then use the results to add or remove markers
+            addMarkersForListChange(listChange.addedItems, map!!)
+            removeMarkersForListChanged(listChange.removedItems)
+            //Then set the current list to the new list
+            currentStationMarkers = newList
+
+        }
     }
     override fun onStop() {
         super.onStop()

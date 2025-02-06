@@ -10,6 +10,8 @@ import android.view.ViewGroup
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.lifecycleScope
 import com.solt.deliveryweatherinsighttest.R
+import com.solt.deliveryweatherinsighttest.data.database.model.StationEntity
+import com.solt.deliveryweatherinsighttest.data.database.model.StationType
 import com.solt.deliveryweatherinsighttest.databinding.HomeMarkerViewLayoutBinding
 import com.solt.deliveryweatherinsighttest.ui.pages.MainPage
 import kotlinx.coroutines.launch
@@ -18,9 +20,11 @@ import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.plugins.markerview.MarkerView
+import org.maplibre.android.plugins.markerview.MarkerViewManager
 import java.lang.ref.WeakReference
 
-class CustomMarkerView(var lat:Double,var lon:Double,val markerType: MarkerType,val page:MainPage,val map:MapLibreMap) {
+open class CustomMarkerView(var lat:Double, var lon:Double,
+                            markerType: MarkerType, val page:MainPage, val map:MapLibreMap) {
     //This will be our custom marker  view
     //It will have the icon , the name of the place (will be gotten with a geocoding api) and the weather condition
     val markerView:FixedMarkerView
@@ -32,7 +36,7 @@ class CustomMarkerView(var lat:Double,var lon:Double,val markerType: MarkerType,
 
     }
     init {
-        //Thank God we fixed the marker not responding to click issues
+        // we fixed the marker not responding to click issues
         //The parent (map view ) was intercepting the click by the gestures
        binding = HomeMarkerViewLayoutBinding.inflate(page.layoutInflater,page.binding.mapView,false)
         //We get the icon based on the marker type
@@ -51,6 +55,16 @@ class CustomMarkerView(var lat:Double,var lon:Double,val markerType: MarkerType,
         if (markerType == MarkerType.LOCATION)getWeatherReportForCurrentMarkerLocation()
 
     }
+
+    companion object{
+        fun getMarkerTypeForStationType(stationType: StationType):MarkerType{
+            val resource = when(stationType){
+                StationType.DELIVERY -> MarkerType.DELIVERY
+                StationType.PICKUP -> MarkerType.PICKUP
+            }
+            return resource
+        }
+    }
     //Based on the marker type i want there to be a different logo
     fun getDrawableForMarkerType(markerType: MarkerType):Int{
         val resource = when(markerType){
@@ -61,7 +75,9 @@ class CustomMarkerView(var lat:Double,var lon:Double,val markerType: MarkerType,
         }
         return resource
     }
-    fun getWeatherReportForCurrentMarkerLocation(){
+
+
+   open fun getWeatherReportForCurrentMarkerLocation(){
         page.viewLifecycleOwner.lifecycleScope.launch {
             //Get the weather report and update the bottom sheet
             Log.i("Weather Report","Weather report gotten ")
@@ -74,9 +90,34 @@ class CustomMarkerView(var lat:Double,var lon:Double,val markerType: MarkerType,
                         val nameOfLocation = name?:it.name?:"Unknown"
                         page.binding.nameOfLocation.text = nameOfLocation
                     }
-                page.updateBottomSheet(it)
+                page.updateBottomSheet(this@CustomMarkerView.lat,this@CustomMarkerView.lon,it)
+                setClickListenersForButtons()
 
             }){}
+        }
+    }
+
+
+  open   fun setClickListenersForButtons(){
+         page.binding.apply {
+             deliveryButton.apply {
+                 visibility = View.VISIBLE
+                 text = "Delivery Station"
+             }
+             pickupButton.apply {
+                 visibility = View.VISIBLE
+                 text = "Pickup Station"
+             }
+
+         }
+        //The delivery and pickup button will add markers to the current location
+        page.binding.deliveryButton.setOnClickListener {
+            val stationEntity = StationEntity(lon,lat,StationType.DELIVERY)
+            page.mainPageViewModel.insertStationByLatLng(stationEntity)
+        }
+        page.binding.pickupButton.setOnClickListener {
+            val stationEntity = StationEntity(lon,lat,StationType.PICKUP)
+            page.mainPageViewModel.insertStationByLatLng(stationEntity)
         }
     }
     fun updateCameraToCurrentMarkerLocation(){

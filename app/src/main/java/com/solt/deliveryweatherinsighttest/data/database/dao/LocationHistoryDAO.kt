@@ -4,6 +4,7 @@ import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.solt.deliveryweatherinsighttest.data.database.model.LocationHistoryEntity
 import kotlinx.coroutines.flow.Flow
@@ -26,7 +27,7 @@ interface LocationHistoryDAO {
  fun getLastFiveLocationHistoryEntries(): Flow<List<LocationHistoryEntity>>
 
     //Insertion
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertLocationHistory(locationHistory:LocationHistoryEntity)
 
     //Deletion

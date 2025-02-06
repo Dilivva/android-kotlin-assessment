@@ -4,7 +4,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.solt.deliveryweatherinsighttest.data.database.model.LocationHistoryEntity
+import com.solt.deliveryweatherinsighttest.data.database.model.StationEntity
 import com.solt.deliveryweatherinsighttest.data.database.repository.LocationHistoryRepository
+import com.solt.deliveryweatherinsighttest.data.database.repository.StationRepository
 import com.solt.deliveryweatherinsighttest.data.remote.model.geocode_forward.NameToLocation
 import com.solt.deliveryweatherinsighttest.data.remote.model.geocode_forward.NameToLocationDisplayModel
 
@@ -14,6 +16,7 @@ import com.solt.deliveryweatherinsighttest.data.remote.model.weather.WeatherRepo
 import com.solt.deliveryweatherinsighttest.data.remote.repository.GeocodingRepository
 import com.solt.deliveryweatherinsighttest.data.remote.repository.GeocodingRepositoryImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import java.lang.IllegalStateException
 import java.time.LocalDateTime
@@ -21,7 +24,7 @@ import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
-class MainPageViewModel @Inject constructor(val weatherRepo: WeatherRepository, val locationHistoryRepository: LocationHistoryRepository,val geocodingRepository: GeocodingRepository): ViewModel() {
+class MainPageViewModel @Inject constructor(val weatherRepo: WeatherRepository, val locationHistoryRepository: LocationHistoryRepository,val geocodingRepository: GeocodingRepository,val stationRepository: StationRepository): ViewModel() {
 //Get the weather report when never there is a click on the map
     suspend fun getWeatherReport(longitude:Double, latitude:Double,onSuccess:(WeatherReportModel)->Unit,onFailure:(Exception)->Unit){
     when(val result = weatherRepo.getWeatherReportByLocation(longitude,latitude)){
@@ -66,4 +69,17 @@ class MainPageViewModel @Inject constructor(val weatherRepo: WeatherRepository, 
             is OperationResult.Success<*> -> result.data as NameToLocationDisplayModel
         }
     }
+     fun insertStationByLatLng(stationEntity: StationEntity){
+        viewModelScope.launch {
+            stationRepository.insertStation(stationEntity)
+        }
+    }
+     fun deleteStationByLatLng(stationEntity: StationEntity){
+        viewModelScope.launch {
+            stationRepository.deleteStation(stationEntity)
+        }
+    }
+
+    fun getStationsAsFlow(): Flow<List<StationEntity>> = stationRepository.getStationsAsFlow()
+    suspend fun getStations():List<StationEntity> = stationRepository.getStations()
 }
