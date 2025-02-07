@@ -10,7 +10,8 @@
         <item name="colorSurfaceInverse">@color/dark_orange</item>
         <item name="colorOnSurfaceInverse">@color/peach_white</item>
         <item name="colorSurfaceContainerHigh">@color/orange_light_darker</item>
-        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:statusBarColor">?colorSurface</item>
+        <item name ="colorSecondaryContainer">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
 
 

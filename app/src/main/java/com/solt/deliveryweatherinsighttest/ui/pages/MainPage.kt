@@ -71,8 +71,9 @@ class MainPage: Fragment() {
             getUserLocationUpdate(field!!)
             setOnLongClick(field!!)
             //Then move to the location history camera
-            MoveToLocationHistoryIfThere(field!!)
+
             getMarkersWhenMapIsReady()
+            MoveToLocationHistoryIfThere(field!!)
         }
     }
 
@@ -86,7 +87,7 @@ class MainPage: Fragment() {
     //This will be a state flow of the user's search query
     val flowOfSearchQueries= MutableStateFlow("")
     //Search adapter
-    val locationSearchAdapter = GeoCodedSearchAdapter()
+    lateinit var locationSearchAdapter:GeoCodedSearchAdapter
     // Location Pointer One should suffice
      var locationPointerMarker:CustomMarkerView? = null
     //This is a list of station markers present
@@ -136,11 +137,13 @@ class MainPage: Fragment() {
             //The location will be gotten when the map is ready
             it.setStyle(MapTiles.BASE_MAP)
             map = it
+            //The compass will be disabled since the location pointer is blocking it
+            it.uiSettings.isCompassEnabled = false
             it.cameraPosition = CameraPosition.Builder().zoom(14.00).target(LatLng(1.0,2.0)).build()
         }
         //We also need to set up the bottom sheet to show when the user long clicks on the any point in the map and display a weather information
         //That will be set up when the map is ready
-    //Set the bottom sheet attributes
+        //Set the bottom sheet attributes
        val bottomSheetBehaviour = BottomSheetBehavior.from(binding.weatherBottomSheet)
         //We will also add a bottom sheet callback
         bottomSheetBehaviour.apply {
@@ -151,6 +154,15 @@ class MainPage: Fragment() {
         //This will be don on the before for draw
         binding.weatherReportMain.doOnPreDraw {
             bottomSheetBehaviour.peekHeight= it.height
+        }
+        locationSearchAdapter  = GeoCodedSearchAdapter{
+            //When the user clicks on a result we mark the position with a marker
+            //Return if there are null
+            map?:return@GeoCodedSearchAdapter
+            it.latitude?:return@GeoCodedSearchAdapter
+            it.longitude?:return@GeoCodedSearchAdapter
+            markLocationOnMap(it.latitude,it.longitude, map!!)
+            clearSearchBar()
         }
 
         // We need to setup the search up the recycler view adapter
@@ -189,16 +201,13 @@ class MainPage: Fragment() {
         }
         //Add the clear button which clears the text so that the search bar closes
         binding.cancelSearch.setOnClickListener {
-            binding.searchBar.text.clear()
+            clearSearchBar()
         }
 
-//This button will toggle on and off the location callback
+        //This button will toggle on and off the location callback
         binding.locationUpdateButton.setOnClickListener {
             mapLocationCallback?.updateLocationEnable(null)
         }
-
-
-
 
 
 
@@ -248,6 +257,7 @@ class MainPage: Fragment() {
              //When created we will monitor it
              mainPage.viewLifecycleOwner.lifecycleScope.launch {
                  isLocationUpdateEnable.collectLatest {
+                     Log.i("LocationCallBack",it.toString())
                      monitorLocationEnable(it)
                  }
              }
@@ -333,8 +343,10 @@ class MainPage: Fragment() {
         if(locationPointerMarker ==null) {
             locationPointerMarker = CustomMarkerView(latitude,longitude,MarkerType.LOCATION,this,map)
             markerManager.addMarker(locationPointerMarker!!.markerView)
+            map.animateCamera(CameraUpdateFactory.newLatLng(LatLng(latitude,longitude)))
         }else{
             locationPointerMarker!!.setLatLng(latitude,longitude)
+            map.animateCamera(CameraUpdateFactory.newLatLng(LatLng(latitude,longitude)))
         }
 
 
@@ -364,8 +376,7 @@ class MainPage: Fragment() {
     //If the user clicks on an location item history it will take him to the map and move the camera to that location
     // so we need to get the location
     fun MoveToLocationHistoryIfThere(map: MapLibreMap){
-        //First we turn off location updates
-        mapLocationCallback?.updateLocationEnable(false)
+
         val args = arguments
         if(args !=null) {
             val locationHistoryParcel =
@@ -378,8 +389,10 @@ class MainPage: Fragment() {
                     }catch (e:Exception){null}
                 }
 
-            //If there is a location history //Then we will update the map with the location history point
-            if (locationHistoryParcel != null) map.animateCamera(CameraUpdateFactory.newLatLng(locationHistoryParcel))
+            //If there is a location history //Then we will mark a location marker there
+            if (locationHistoryParcel != null){
+                markLocationOnMap(locationHistoryParcel.latitude,locationHistoryParcel.longitude,map)
+            }
         }
 
     }
@@ -458,6 +471,11 @@ class MainPage: Fragment() {
             currentStationMarkers = newList
 
         }
+    }
+    //Just a simple function to clear the search bar
+    fun clearSearchBar(){
+        binding.searchBar.text.clear()
+        binding.searchBar.clearFocus()
     }
     override fun onStop() {
         super.onStop()

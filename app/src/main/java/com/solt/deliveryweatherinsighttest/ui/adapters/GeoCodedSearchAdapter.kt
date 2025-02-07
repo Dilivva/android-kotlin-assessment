@@ -18,23 +18,27 @@ val geoCodedLocationDiffUtil = object: DiffUtil.ItemCallback<GeoCodedLocation>()
     }
 
 }
-class GeoCodedSearchAdapter: ListAdapter<GeoCodedLocation,GeocodedSearchViewHolder>(
+class GeoCodedSearchAdapter(val onClick:(GeoCodedLocation)->Unit): ListAdapter<GeoCodedLocation,GeocodedSearchViewHolder>(
     geoCodedLocationDiffUtil) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GeocodedSearchViewHolder {
         val binding = MapSearchItemLayoutBinding.inflate(LayoutInflater.from(parent.context),parent,false)
-        return GeocodedSearchViewHolder(binding)
+        return GeocodedSearchViewHolder(binding,onClick)
     }
 
     override fun onBindViewHolder(holder: GeocodedSearchViewHolder, position: Int) {
        holder.bind(getItem(position))
     }
 }
-class GeocodedSearchViewHolder(val binding:MapSearchItemLayoutBinding):ViewHolder(binding.root){
+class GeocodedSearchViewHolder(val binding:MapSearchItemLayoutBinding, val onClick: (GeoCodedLocation) -> Unit):ViewHolder(binding.root){
     fun bind(location:GeoCodedLocation){
         binding.apply {
             nameOfLocation.text = location.name?:"Unknown"
             latitude.text = (location.latitude?:0.0).toString()
             longitude.text = (location.longitude?:0.0).toString()
+
+            root.setOnClickListener {
+                onClick(location)
+            }
         }
     }
 }
