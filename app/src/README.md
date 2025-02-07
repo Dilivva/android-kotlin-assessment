@@ -10,8 +10,8 @@ The app utilises Location Services in Android, Maps and external apis to retriev
 ## Screenshots
 
 <div style="display: flex; gap: 8px;">
-    <img src="src/Screenshots/main_page_dark.png" alt="Main Page Dark" width="200" height="450">
-    <img src="src/Screenshots/info_page_dark.png" alt="Info Page Dark" width="200" height="450">
-    <img src="src/Screenshots/main_page_light.png" alt="Main Page Light" width="200" height="450">
-    <img src="src/Screenshots/info_page_light.png" alt="Info Page Light" width="200" height="450">
+    <img src="Screenshots/main_page_dark.png" alt="Main Page Dark" width="200" height="450">
+    <img src="Screenshots/info_page_dark.png" alt="Info Page Dark" width="200" height="450">
+    <img src="Screenshots/main_page_light.png" alt="Main Page Light" width="200" height="450">
+    <img src="Screenshots/info_page_light.png" alt="Info Page Light" width="200" height="450">
 </div>
