@@ -6,71 +6,102 @@
     android:layout_height="match_parent"
     android:layout_width="match_parent"
     >
-    <androidx.constraintlayout.widget.ConstraintLayout
-       android:id="@+id/search_layout"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/rounded_rect_bg"
         android:layout_marginHorizontal="12dp"
         android:layout_gravity="top|center_horizontal"
-        android:elevation="10dp"
-        android:layout_marginTop="12dp">
-
-
-        <ImageButton
-            android:id="@+id/searchIcon"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:scaleType="fitCenter"
-            app:layout_constraintBottom_toBottomOf="@+id/search_bar"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/search_icon"
-            android:backgroundTint="@android:color/transparent"/>
-
-        <EditText
-            android:id="@+id/search_bar"
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp"
+        android:elevation="10dp">
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/search_layout"
             android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
+            android:background="@drawable/rounded_rect_bg"
+            android:paddingVertical="4dp"
+            >
 
-            app:layout_constraintEnd_toStartOf="@+id/cancel_search"
-            app:layout_constraintStart_toEndOf="@+id/searchIcon"
-            app:layout_constraintTop_toTopOf="parent" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/search_result_list"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:maxHeight="300dp"
-            android:layout_marginTop="1dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/search_bar" />
+            <ImageButton
+                android:id="@+id/searchIcon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:scaleType="fitCenter"
+                app:tint="?colorSurfaceInverse"
+                app:layout_constraintBottom_toBottomOf="@+id/search_bar"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/search_icon"
+                android:backgroundTint="@android:color/transparent"/>
 
-        <ImageButton
-            android:id="@+id/cancel_search"
-            android:layout_width="30dp"
-            android:layout_height="40dp"
-            app:layout_constraintBottom_toBottomOf="@+id/search_bar"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:scaleType="fitCenter"
-            android:backgroundTint="@android:color/transparent"
-            app:srcCompat="@drawable/cancel_icon" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <EditText
+                android:id="@+id/search_bar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:padding="4dp"
+                app:layout_constraintEnd_toStartOf="@+id/cancel_search"
+                app:layout_constraintStart_toEndOf="@+id/searchIcon"
+                app:layout_constraintTop_toTopOf="parent" />
+            <ImageButton
+                android:id="@+id/cancel_search"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                app:tint="?colorSurfaceInverse"
+                app:layout_constraintBottom_toBottomOf="@+id/search_bar"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:scaleType="fitCenter"
+                android:backgroundTint="@android:color/transparent"
+                app:srcCompat="@drawable/cancel_icon" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/search_result_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                android:maxHeight="300dp"
+                android:background="@android:color/transparent"
+                android:padding="4dp"
+                android:layout_marginTop="1dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/search_bar" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+       <ImageButton
+           android:id="@+id/location_update_button"
+           android:layout_marginStart="4dp"
+           android:layout_width="40dp"
+           android:layout_height="40dp"
+           android:padding="10dp"
+           app:srcCompat = "@drawable/pointer_icon"
+           android:scaleType="fitCenter"
+           app:tint ="?colorSurfaceInverse"
+           android:background="@drawable/rounded_rect_bg"/>
+
+    </LinearLayout>
+
 
     <org.maplibre.android.maps.MapView
         android:id="@+id/map_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+
     <LinearLayout
         android:id="@+id/weather_bottom_sheet"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:padding="4dp"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
-        android:theme="@style/Theme.BottomSheetStyle"
+        android:background="@drawable/bottom_sheet_background"
+        android:theme="@style/BottomSheetStyle"
+
         >
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -127,20 +158,40 @@
     android:paddingVertical="4dp"
     android:paddingHorizontal="4dp">
             <TextView
-                android:id="@+id/temp"
+                android:id="@+id/temp_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
+                android:text="@string/temperature" />
+
+            <TextView
+                android:id="@+id/temp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginStart="2dp"
+                app:layout_constraintStart_toEndOf="@id/temp_label"
+                app:layout_constraintTop_toTopOf="parent"
                 tools:text="98C" />
+
+            <TextView
+                android:id="@+id/wind_speed_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/temp"
+                android:text="@string/wind_speed" />
 
             <TextView
                 android:id="@+id/wind_speed"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginStart="2dp"
+                app:layout_constraintStart_toEndOf="@id/wind_speed_label"
                 app:layout_constraintTop_toBottomOf="@id/temp"
                 tools:text="10m/s" />
 
@@ -149,7 +200,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-
+                 android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/wind_speed"

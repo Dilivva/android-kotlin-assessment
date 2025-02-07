@@ -2,4 +2,16 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="orange_dark">#E87001</color>
+    <color name="orange">#FF810A</color>
+    <color name="orange_light">#FF8B1F</color>
+    <color name="orange_light_darker">#F8E8DB</color>
+    <color name="white_orange">#FFF4EB</color>
+    <color name="dark_orange">#140900</color>
+    <color name="orange_dark_lighter">#201003</color>
+    <color name="peach_light">#F5C292</color>
+    <color name="peach_white">#FCEAD9</color>
+    <color name="peach_dark">#130A02</color>
+    <color name="peach">#F5C08F</color>
+
 </resources>

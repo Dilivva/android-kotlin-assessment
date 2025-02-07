@@ -1,6 +1,5 @@
 package com.solt.deliveryweatherinsighttest.ui.pages
 
-import FixedMarkerView
 import android.Manifest
 import android.graphics.Color
 import android.os.Build
@@ -8,13 +7,10 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.Gravity
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.doOnPreDraw
@@ -23,7 +19,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -35,14 +30,12 @@ import com.google.android.material.snackbar.Snackbar
 import com.solt.deliveryweatherinsighttest.MainActivity
 import com.solt.deliveryweatherinsighttest.R
 import com.solt.deliveryweatherinsighttest.data.database.model.StationEntity
-import com.solt.deliveryweatherinsighttest.data.database.model.StationType
 import com.solt.deliveryweatherinsighttest.data.remote.Utils
 import com.solt.deliveryweatherinsighttest.data.remote.model.weather.WeatherReportModel
 import com.solt.deliveryweatherinsighttest.databinding.HomeMarkerViewLayoutBinding
 import com.solt.deliveryweatherinsighttest.databinding.MainPageLayoutBinding
 import com.solt.deliveryweatherinsighttest.ui.adapters.GeoCodedSearchAdapter
 import com.solt.deliveryweatherinsighttest.ui.maps.CustomMarkerView
-
 import com.solt.deliveryweatherinsighttest.ui.maps.MapTiles
 import com.solt.deliveryweatherinsighttest.ui.maps.MarkerType
 import com.solt.deliveryweatherinsighttest.ui.maps.StationMarkerView
@@ -50,10 +43,8 @@ import com.solt.deliveryweatherinsighttest.ui.utils.ListChangeCalculator
 import com.solt.deliveryweatherinsighttest.ui.utils.WeatherDeliveryRecommendations
 import com.solt.deliveryweatherinsighttest.ui.viewmodel.LocationViewModel
 import com.solt.deliveryweatherinsighttest.ui.viewmodel.MainPageViewModel
-import com.solt.deliveryweatherinsighttest.utils.LocationService
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
@@ -62,9 +53,9 @@ import org.maplibre.android.camera.CameraPosition
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
-import org.maplibre.android.plugins.markerview.MarkerView
 import org.maplibre.android.plugins.markerview.MarkerViewManager
-import javax.inject.Inject
+
+
 const val LOCATION_HISTORY_ITEM = "location_history_item"
 @AndroidEntryPoint
 class MainPage: Fragment() {
@@ -102,6 +93,8 @@ class MainPage: Fragment() {
     var currentStationMarkers = emptyList<StationEntity>()
     ////This is a list of station markers  views present
     var currentStationMarkersView = mutableListOf<StationMarkerView>()
+    //Map Location Callback for getting user location
+    var mapLocationCallback :MapLocationCallBack? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -133,7 +126,11 @@ class MainPage: Fragment() {
             activity.permissionActivityContractLauncher.launch(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION))
         }
 
-        //The map is not dispatching touch events to the children markers
+        //We need to clear the station Markers and Markerviews for the calculation to work
+        currentStationMarkers = emptyList()
+        currentStationMarkersView = mutableListOf()
+
+
         //Set up the map
         binding.mapView.getMapAsync {
             //The location will be gotten when the map is ready
@@ -194,9 +191,11 @@ class MainPage: Fragment() {
         binding.cancelSearch.setOnClickListener {
             binding.searchBar.text.clear()
         }
-        //We need to clear the station Markers and Markerviews for the calculation to work
-        currentStationMarkers = emptyList()
-        currentStationMarkersView = mutableListOf()
+
+//This button will toggle on and off the location callback
+        binding.locationUpdateButton.setOnClickListener {
+            mapLocationCallback?.updateLocationEnable(null)
+        }
 
 
 
@@ -205,7 +204,8 @@ class MainPage: Fragment() {
 
     }
     fun getUserLocationUpdate(map:MapLibreMap) {
-        this.lifecycle.addObserver(MapLocationCallBack(map,this))
+        mapLocationCallback =MapLocationCallBack(map,this)
+        this.lifecycle.addObserver(mapLocationCallback!!)
     }
     fun updateBottomSheet(weatherReport: WeatherReportModel){
         binding.nameOfLocation.text = weatherReport.name
@@ -224,7 +224,7 @@ class MainPage: Fragment() {
     }
     fun setOnLongClick(map:MapLibreMap){
         map.addOnMapLongClickListener { latLng ->
-//
+
             //Now a marker will appear on the screen
              markLocationOnMap(latLng.latitude,latLng.longitude,map)
             //Then add the place to location history
@@ -235,6 +235,7 @@ class MainPage: Fragment() {
 
     }
      class MapLocationCallBack( val map: MapLibreMap, val mainPage:MainPage): LocationCallback(),LifecycleEventObserver {
+         val isLocationUpdateEnable :MutableStateFlow<Boolean>
          //We will need one markerview for the home location
 
           val homeMarker :CustomMarkerView
@@ -242,6 +243,14 @@ class MainPage: Fragment() {
 
              homeMarker = CustomMarkerView(0.0,0.0,MarkerType.HOME,mainPage,map)
              mainPage.markerManager.addMarker(homeMarker.markerView)
+             //This will be used to know whether location updates are on or off
+             isLocationUpdateEnable = MutableStateFlow(false)
+             //When created we will monitor it
+             mainPage.viewLifecycleOwner.lifecycleScope.launch {
+                 isLocationUpdateEnable.collectLatest {
+                     monitorLocationEnable(it)
+                 }
+             }
          }
         override fun onLocationResult(location: LocationResult) {
             super.onLocationResult(location)
@@ -259,23 +268,62 @@ class MainPage: Fragment() {
             //Here we will check the lifecycle state of the fragment gto stop location updates if it is on Pause
             when(event){
                 Lifecycle.Event.ON_RESUME->{
-
-                   mainPage.locationViewModel.requestLocationUpdates(mainPage,this){
-                   //Just show a snackbar
-                       mainPage.showErrorSnackBar(it)
-                    }
+                    isLocationUpdateEnable.value = true
                 }
                 Lifecycle.Event.ON_PAUSE->{
 
-                    mainPage.locationViewModel.removeLocationUpdates(mainPage,this)
+
+                    isLocationUpdateEnable.value = false
+
                 }
                 else -> {}
             }
         }
+
+         fun monitorLocationEnable(enabled: Boolean){
+             //If the location is disabled remove it from the location updates callback
+             //If enabled add it back
+             //We will also show a visual indicator that the location update has been off
+
+             when(enabled){
+                 true -> {
+                     mainPage.locationViewModel.requestLocationUpdates(mainPage,this){
+                         //Just show a snackbar
+                         mainPage.showErrorSnackBar(it)
+                     }
+                     val colorPrimary = mainPage.getColorPrimaryFromTheme()
+                     mainPage.binding.locationUpdateButton.setColorFilter(colorPrimary)
+                 }
+                 false -> {
+                     mainPage.locationViewModel.removeLocationUpdates(mainPage,this)
+                     val colorSurfaceInverse = mainPage.getColorSurfaceInverseFromTheme()
+                     mainPage.binding.locationUpdateButton.setColorFilter(colorSurfaceInverse)
+                 }
+             }
+
+         }
+         fun updateLocationEnable(value:Boolean?){
+             //If there is a value update it to the value else make it the opposite of the current value
+             if(value == null){
+             isLocationUpdateEnable.value = !isLocationUpdateEnable.value
+             }else isLocationUpdateEnable.value =value
+         }
     }
 
 //We need to add a marker view for when a user long clicks on the map
-
+     //Get colorPrimary
+    fun getColorPrimaryFromTheme():Int{
+    val colorAttr = com.google.android.material.R.attr.colorPrimary
+    val outValue = TypedValue()
+    requireContext().theme.resolveAttribute(colorAttr, outValue, true)
+    return outValue.data
+    }
+    fun getColorSurfaceInverseFromTheme():Int{
+        val colorAttr = com.google.android.material.R.attr.colorSurfaceInverse
+        val outValue = TypedValue()
+        requireContext().theme.resolveAttribute(colorAttr, outValue, true)
+        return outValue.data
+    }
     fun markLocationOnMap(latitude :Double , longitude:Double,map: MapLibreMap){
         //If the location pointer has not been created create it and if it has update its position
         val binding = HomeMarkerViewLayoutBinding.inflate(layoutInflater)
@@ -316,7 +364,8 @@ class MainPage: Fragment() {
     //If the user clicks on an location item history it will take him to the map and move the camera to that location
     // so we need to get the location
     fun MoveToLocationHistoryIfThere(map: MapLibreMap){
-
+        //First we turn off location updates
+        mapLocationCallback?.updateLocationEnable(false)
         val args = arguments
         if(args !=null) {
             val locationHistoryParcel =
@@ -324,7 +373,6 @@ class MainPage: Fragment() {
                     args.getParcelable(LOCATION_HISTORY_ITEM, LatLng::class.java)
                 } else {
                     try {
-
 
                         args.getParcelable<LatLng>(LOCATION_HISTORY_ITEM)
                     }catch (e:Exception){null}

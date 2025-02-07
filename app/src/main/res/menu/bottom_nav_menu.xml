@@ -2,5 +2,5 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item android:id="@+id/mainPage" android:icon="@drawable/home_icon" android:title="@string/home" app:showAsAction="ifRoom"/>
-    <item  android:id="@+id/infoPage" android:icon="@drawable/home_icon" android:title="@string/info" app:showAsAction="ifRoom"/>
+    <item  android:id="@+id/infoPage" android:icon="@drawable/info_icon" android:title="@string/info" app:showAsAction="ifRoom"/>
 </menu>
