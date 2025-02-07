@@ -11,6 +11,7 @@ import com.basebox.weatherinsights.data.model.InsightResponse
 import com.basebox.weatherinsights.data.repo.InsightRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,14 +24,18 @@ class InsightViewModel @Inject constructor(private val repository: InsightReposi
     val weatherDropOffData: LiveData<InsightResponse?> = _weatherDropOffData
 
     fun fetchData(location: String, dropoff: String) {
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
-                val response = repository.fetchData(location)
-                _weatherData.postValue(response)
+                val response = async {repository.fetchData(location)}
+                _weatherData.postValue(response.await())
+                val response2 = async {repository.fetchData(dropoff)}
+                _weatherDropOffData.postValue(response2.await())
 //
             } catch (e: Exception) {
-                Log.e("InsightViewModel", "Error fetching weather: ${e.message}")
-                _weatherData.value = null
+                    Log.e("InsightViewModel", "Error fetching weather: ${e.message}")
+                _weatherData.value = null.also {
+                    _weatherDropOffData.value = null
+                }
             }
         }
     }
@@ -38,9 +43,14 @@ class InsightViewModel @Inject constructor(private val repository: InsightReposi
     val savedData = repository.allWeatherData.asLiveData()
 
     fun saveData(location: String, temp: Double, description: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.insertWeatherData(WeatherData(0, location, temp, description ))
             Log.d("InsightViewModel", "Saved: ${WeatherData(0, location, temp, description )}")
         }
+    }
+    private val savedLocations = mutableListOf<WeatherData>()
+
+    fun isDataSaved(location: String, temperature: Double): Boolean {
+        return savedLocations.any { it.location == location && it.temperature == temperature }
     }
 }

@@ -1,12 +1,12 @@
 package com.basebox.weatherinsights.di
 
-import android.app.Application
-import androidx.room.Room
+import android.content.Context
 import com.basebox.weatherinsights.data.db.RoomDB
 import com.basebox.weatherinsights.data.db.WeatherDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -17,8 +17,8 @@ object InsightsModule {
 
     @Singleton
     @Provides
-    fun provideDatabase(app: Application): RoomDB {
-        return Room.databaseBuilder(app, RoomDB::class.java, "weather_database").build()
+    fun provideDatabase(@ApplicationContext context: Context): RoomDB {
+        return RoomDB.getDatabase(context)
     }
 
     @Singleton

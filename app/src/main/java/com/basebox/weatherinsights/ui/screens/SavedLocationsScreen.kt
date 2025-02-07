@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.basebox.weatherinsights.ui.viewmodel.InsightViewModel
 
@@ -37,8 +38,9 @@ fun SavedLocationsScreen(viewModel: InsightViewModel = hiltViewModel()) {
         .fillMaxSize()
         .padding(16.dp)) {
         Text(
-            "Saved Locations",
+            "Saved Trips",
             fontWeight = FontWeight.Bold,
+            fontSize = 24.sp,
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
@@ -50,8 +52,7 @@ fun SavedLocationsScreen(viewModel: InsightViewModel = hiltViewModel()) {
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-
-                items(insights.size) { id->
+                items(insights.size) { id ->
                     val weatherData = insights.getOrNull(id)
                     weatherData?.let {
                     Card(
@@ -61,28 +62,31 @@ fun SavedLocationsScreen(viewModel: InsightViewModel = hiltViewModel()) {
                         elevation = CardDefaults.cardElevation(4.dp)
                     ) {
                         Text(
-                            text = "${it.location}",
+                            text = it.location,
                             fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
                             style = MaterialTheme.typography.headlineSmall,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 8.dp, horizontal = 8.dp)
+                                .padding(vertical = 4.dp, horizontal = 8.dp)
                         )
                         Text(
-                            text = "${it.description}",
+                            text = it.description,
                             fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
                             style = MaterialTheme.typography.headlineSmall,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 8.dp, horizontal = 8.dp)
+                                .padding(vertical = 4.dp, horizontal = 8.dp)
                         )
                         Text(
-                            text = "${it.temperature.toString()}",
+                            text = it.temperature.toString(),
                             fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
                             style = MaterialTheme.typography.headlineSmall,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 8.dp, horizontal = 8.dp)
+                                .padding(vertical = 4.dp, horizontal = 8.dp)
                         )
                     }
                 }

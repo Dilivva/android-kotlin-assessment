@@ -4,11 +4,10 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [WeatherData::class], version = 1, exportSchema = false)
+@Database(entities = [WeatherData::class], version = 2, exportSchema = false)
 abstract class RoomDB : RoomDatabase() {
     abstract fun weatherDao(): WeatherDao
 
@@ -30,11 +29,12 @@ abstract class RoomDB : RoomDatabase() {
                     context.applicationContext,
                     RoomDB::class.java,
                     "weather_database"
-                ).addMigrations(MIGRATION_1_2).fallbackToDestructiveMigration()
+                )
+//                    .addMigrations(MIGRATION_1_2).fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
-                // return instance
-                instance
+                return instance
+                //instance
             }
         }
     }
