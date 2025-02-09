@@ -1,25 +1,85 @@
 package com.solt.deliveryweatherinsighttest.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import com.solt.deliveryweatherinsighttest.data.remote.WeatherRepository
-import com.solt.deliveryweatherinsighttest.data.remote.model.WeatherReportModel
+import androidx.lifecycle.viewModelScope
+import com.solt.deliveryweatherinsighttest.data.database.model.LocationHistoryEntity
+import com.solt.deliveryweatherinsighttest.data.database.model.StationEntity
+import com.solt.deliveryweatherinsighttest.data.database.repository.LocationHistoryRepository
+import com.solt.deliveryweatherinsighttest.data.database.repository.StationRepository
+import com.solt.deliveryweatherinsighttest.data.remote.model.geocode_forward.NameToLocation
+import com.solt.deliveryweatherinsighttest.data.remote.model.geocode_forward.NameToLocationDisplayModel
 
-class MainViewModel(val weatherRepo:WeatherRepository): ViewModel() {
-    suspend fun getWeather(longitude:Double,latitude:Double,onSuccess:(WeatherReportModel)->Unit){
-        //This will get the weather report if there are no exceptions
+import com.solt.deliveryweatherinsighttest.data.remote.model.util.OperationResult
+import com.solt.deliveryweatherinsighttest.data.remote.repository.WeatherRepository
+import com.solt.deliveryweatherinsighttest.data.remote.model.weather.WeatherReportModel
+import com.solt.deliveryweatherinsighttest.data.remote.repository.GeocodingRepository
+import com.solt.deliveryweatherinsighttest.data.remote.repository.GeocodingRepositoryImpl
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
+import java.lang.IllegalStateException
+import java.time.LocalDateTime
+import java.util.Date
+import javax.inject.Inject
 
-        val weatherReport = weatherRepo.getWeatherReportByLongitudeAndLatitude(longitude,latitude)
-        if (weatherReport!= null ){
-            onSuccess(weatherReport)
+@HiltViewModel
+class MainPageViewModel @Inject constructor(val weatherRepo: WeatherRepository, val locationHistoryRepository: LocationHistoryRepository,val geocodingRepository: GeocodingRepository,val stationRepository: StationRepository): ViewModel() {
+//Get the weather report when never there is a click on the map
+    suspend fun getWeatherReport(longitude:Double, latitude:Double,onSuccess:(WeatherReportModel)->Unit,onFailure:(Exception)->Unit){
+    when(val result = weatherRepo.getWeatherReportByLocation(longitude,latitude)){
+           is OperationResult.Failure -> onFailure(result.e)
+           is OperationResult.Success<*> -> {
+               val data  = result.data as? WeatherReportModel
+               //If it is not a weather report return onFailure
+               if (data == null) onFailure(IllegalStateException("Data is not of type required"))
+               else onSuccess(data)
+           }
+       }
+    }
+     //We need to add the location to location history when the user long clicks
+    fun insertLocationIntoHistory(latitude: Double,longitude: Double){
+        viewModelScope.launch {
+            val presentTime = Date()
+            val currentLocationHistoryEntity = LocationHistoryEntity(longitude,latitude,presentTime)
+            locationHistoryRepository.insertLocationHistory(currentLocationHistoryEntity)
         }
     }
-class MainViewModelFactory(val weatherRepo: WeatherRepository):ViewModelProvider.Factory{
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if(modelClass.isAssignableFrom(MainViewModel::class.java)){
-            return MainViewModel(weatherRepo) as T
-        }
-        else throw IllegalStateException()
+
+    //We will search for the  location if there is an error we just return null
+   suspend fun searchForLocationByName(name:String):NameToLocationDisplayModel?{
+        val result = geocodingRepository.searchForLocationByName(name)
+        return when(result){
+           is OperationResult.Failure -> {
+               Log.i("Search ","${result.e.message}")
+               null
+           }
+           is OperationResult.Success<*> -> result.data as NameToLocationDisplayModel
+       }
     }
-}
+
+    //We will use this get the name of the location for the weather report and location History
+    suspend fun getLocationNameByLatLng(latitude: Double,longitude: Double):NameToLocationDisplayModel?{
+        val result = geocodingRepository.getNameByLatLng(latitude,longitude)
+        return when(result){
+            is OperationResult.Failure -> {
+                Log.i("Search ","${result.e.message}")
+                null
+            }
+            is OperationResult.Success<*> -> result.data as NameToLocationDisplayModel
+        }
+    }
+     fun insertStationByLatLng(stationEntity: StationEntity){
+        viewModelScope.launch {
+            stationRepository.insertStation(stationEntity)
+        }
+    }
+     fun deleteStationByLatLng(stationEntity: StationEntity){
+        viewModelScope.launch {
+            stationRepository.deleteStation(stationEntity)
+        }
+    }
+
+    fun getStationsAsFlow(): Flow<List<StationEntity>> = stationRepository.getStationsAsFlow()
+    suspend fun getStations():List<StationEntity> = stationRepository.getStations()
 }

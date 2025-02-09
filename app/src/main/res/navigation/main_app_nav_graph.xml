@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_app_nav_graph"
+    app:startDestination="@id/mainPage">
+
+    <fragment
+        android:id="@+id/mainPage"
+        android:name="com.solt.deliveryweatherinsighttest.ui.pages.MainPage"
+        android:label="MainPage" />
+    <fragment
+        android:id="@+id/infoPage"
+        android:name="com.solt.deliveryweatherinsighttest.ui.pages.InfoPage"
+        android:label="InfoPage" >
+        <action
+            android:id="@+id/action_infoPage_to_mainPage"
+            app:destination="@id/mainPage" />
+    </fragment>
+</navigation>
