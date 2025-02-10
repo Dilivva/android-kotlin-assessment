@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Delivery Weather Insights App</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="home">Home</string>
+    <string name="history">History</string>
+    <string name="pickup_location">Pickup Location</string>
+    <string name="drop_off_location">Drop-off Location</string>
+    <string name="get_recommendation">Get Recommendation</string>
+    <string name="weather_insight_recommendation">Weather Insight Recommendation</string>
+    <string name="pickup_location_weather_information">Pickup Location Weather Information</string>
+    <string name="dropoff_location_weather_information">Dropoff Location Weather Information</string>
+    <string name="temperature">Temperature</string>
+    <string name="miles_hour">miles/hour</string>
+</resources>
